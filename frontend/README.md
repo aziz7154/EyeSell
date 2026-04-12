@@ -100,11 +100,10 @@ npm run dev
 
 
 
-```
 ---
 
 ## API Endpoints
-
+```
 | Method | Endpoint | Description |
 |---|---|---|
 | GET | `/` | Health check |
@@ -115,7 +114,7 @@ npm run dev
 | GET | `/listings` | Get all listings for a user |
 | POST | `/auth/register` | Create user account |
 | POST | `/auth/login` | Authenticate user |
-
+```
 ---
 
 ## Sample Usage
