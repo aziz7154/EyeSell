@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EyeSell — Scan an item</title>
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    /* ==========================================================================
+       UPLOAD PAGE STYLES
+    ========================================================================== */
+
+    /* --------------------------------------------------------------------------
+       Upload Zone
+    -------------------------------------------------------------------------- */
+
+    .upload-zone {
+      border: 1.5px dashed var(--blue-light);
+      border-radius: 10px;
+      background: var(--blue-pale);
+      padding: 52px 24px;
+      text-align: center;
+      margin-bottom: 14px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .upload-zone:hover          { background: #d4e8f8; }
+    .upload-zone.is-drag-over   { background: #c2dff5; border-color: var(--blue-dark); }
+    .upload-zone.is-file-loaded { background: var(--green-pale); border-color: var(--green); border-style: solid; }
+
+    .upload-zone__icon {
+      width: 48px;
+      height: 48px;
+      background: var(--white);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 14px;
+      border: 0.5px solid #B5D4F4;
+    }
+
+    .upload-zone__title  { font-size: 15px; font-weight: 500; color: var(--blue-dark); margin-bottom: 4px; }
+    .upload-zone__sub    { font-size: 12px; color: var(--blue-mid); margin-bottom: 18px; }
+
+    .upload-zone__btn {
+      display: inline-block;
+      border: 0.5px solid var(--blue-light);
+      color: var(--blue-dark);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 9px 22px;
+      border-radius: 6px;
+      background: var(--white);
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    /* --------------------------------------------------------------------------
+       Preview
+    -------------------------------------------------------------------------- */
+
+    .upload-zone__preview {
+      display: none;
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin: 0 auto 12px;
+      border: 2px solid var(--green);
+    }
+
+    .upload-zone__preview.is-visible { display: block; }
+
+    .upload-zone__filename {
+      display: none;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--green-dark);
+      margin-bottom: 8px;
+    }
+
+    .upload-zone__filename.is-visible { display: block; }
+
+    /* --------------------------------------------------------------------------
+       File type badges
+    -------------------------------------------------------------------------- */
+
+    .file-types { display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; justify-content: center; }
+    .file-badge { background: var(--gray-bg); color: var(--text-muted); font-size: 11px; padding: 3px 10px; border-radius: 20px; }
+
+    /* --------------------------------------------------------------------------
+       Hint input
+    -------------------------------------------------------------------------- */
+
+    .hint-input {
+      width: 100%;
+      border: 0.5px solid var(--gray-border);
+      border-radius: 6px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--text-muted);
+      background: var(--white);
+      margin-bottom: 12px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .hint-input::placeholder { color: var(--gray-text); }
+    .hint-input:focus        { border-color: var(--blue-light); }
+
+    /* --------------------------------------------------------------------------
+       Submit Button + Loading State
+    -------------------------------------------------------------------------- */
+
+    .analyze-btn {
+      width: 100%;
+      background: var(--green);
+      color: var(--white);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 13px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 0.15s;
+    }
+
+    .analyze-btn:hover           { background: var(--green-dark); }
+    .analyze-btn:disabled        { background: var(--gray-text); cursor: not-allowed; }
+
+    .analyze-btn__spinner {
+      display: none;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    .analyze-btn.is-loading .analyze-btn__spinner { display: block; }
+    .analyze-btn.is-loading .analyze-btn__label   { opacity: 0.8; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* --------------------------------------------------------------------------
+       Error Message
+    -------------------------------------------------------------------------- */
+
+    .upload-error {
+      display: none;
+      font-size: 13px;
+      color: #A32D2D;
+      background: #FCEBEB;
+      border: 0.5px solid #F09595;
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+    }
+
+    .upload-error.is-visible { display: block; }
+
+    /* --------------------------------------------------------------------------
+       Tips Card
+    -------------------------------------------------------------------------- */
+
+    .tips-card         { background: var(--white); border: 0.5px solid var(--gray-border); border-radius: 10px; padding: 20px 24px; }
+    .tips-card__title  { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 14px; }
+
+    .tip               { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+    .tip:last-child    { margin-bottom: 0; }
+    .tip__dot          { width: 6px; height: 6px; border-radius: 50%; background: var(--green); margin-top: 6px; flex-shrink: 0; }
+    .tip__text         { font-size: 13px; color: var(--text-muted); line-height: 1.55; }
+  </style>
+</head>
+<body>
+
+  <!-- =========================================================
+       NAVIGATION
+  ========================================================== -->
+  <nav class="nav">
+    <a class="logo" href="index.html">Eye<span>Sell</span></a>
+    <div class="nav-links">
+      <a class="nav-link" href="dashboard.html">Dashboard</a>
+      <a class="btn-green" href="upload.html">+ New search</a>
+    </div>
+  </nav>
+
+  <!-- =========================================================
+       MAIN CONTENT
+  ========================================================== -->
+  <main>
+    <div class="page-body">
+
+      <h1 class="page-title">Scan an item</h1>
+      <p class="page-sub">Upload a photo and we'll identify the product and pull pricing data from across the web.</p>
+
+      <!-- Upload Form — POST to Flask /upload endpoint -->
+      <form
+        id="uploadForm"
+        method="POST"
+        action="/upload"
+        enctype="multipart/form-data"
+        novalidate
+      >
+
+        <!-- Drop Zone -->
+        <div class="upload-zone" id="dropzone">
+
+          <img class="upload-zone__preview" id="imagePreview" alt="Selected image preview">
+
+          <div class="upload-zone__icon" id="uploadIcon">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+              <path d="M11 15V6M11 6L8 9M11 6L14 9" stroke="#185FA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3 17h16" stroke="#185FA5" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+
+          <p class="upload-zone__title" id="zoneTitle">Drop your image here</p>
+          <p class="upload-zone__sub" id="zoneSub">JPG, PNG, WEBP — up to 10MB</p>
+          <p class="upload-zone__filename" id="fileName"></p>
+
+          <!-- Hidden file input — triggered by button and drag-drop -->
+          <input
+            type="file"
+            id="fileInput"
+            name="image"
+            accept="image/jpeg,image/png,image/webp"
+            style="display:none"
+          >
+
+          <button type="button" class="upload-zone__btn" id="chooseBtn">
+            Choose file
+          </button>
+
+          <div class="file-types">
+            <span class="file-badge">JPG</span>
+            <span class="file-badge">PNG</span>
+            <span class="file-badge">WEBP</span>
+            <span class="file-badge">Up to 10MB</span>
+          </div>
+
+        </div>
+
+        <!-- Error message -->
+        <p class="upload-error" id="uploadError" role="alert"></p>
+
+        <!-- Optional keyword hint -->
+        <input
+          class="hint-input"
+          type="text"
+          id="hintInput"
+          name="hint"
+          placeholder="Optional: item name or keyword hint..."
+          maxlength="100"
+        >
+
+        <!-- Submit -->
+        <button class="analyze-btn" type="submit" id="submitBtn">
+          <span class="analyze-btn__spinner"></span>
+          <span class="analyze-btn__label">Analyze image →</span>
+        </button>
+
+      </form>
+
+      <!-- Tips -->
+      <div class="tips-card">
+        <p class="tips-card__title">Tips for best results</p>
+        <div class="tip"><div class="tip__dot"></div><p class="tip__text">Use a clear, well-lit photo with the item centered in frame</p></div>
+        <div class="tip"><div class="tip__dot"></div><p class="tip__text">Include any visible brand logos, labels, or model numbers</p></div>
+        <div class="tip"><div class="tip__dot"></div><p class="tip__text">Avoid blurry or heavily cropped images for better identification</p></div>
+        <div class="tip"><div class="tip__dot"></div><p class="tip__text">Multiple items in one photo may reduce accuracy</p></div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    /* ==========================================================================
+       UPLOAD PAGE — Constants
+    ========================================================================== */
+
+    const MAX_FILE_SIZE_MB  = 10;
+    const MAX_FILE_SIZE_B   = MAX_FILE_SIZE_MB * 1024 * 1024;
+    const ALLOWED_TYPES     = ['image/jpeg', 'image/png', 'image/webp'];
+    const FLASK_ENDPOINT    = '/upload';
+
+    /* ==========================================================================
+       UPLOAD PAGE — Element References
+    ========================================================================== */
+
+    const form          = document.getElementById('uploadForm');
+    const dropzone      = document.getElementById('dropzone');
+    const fileInput     = document.getElementById('fileInput');
+    const chooseBtn     = document.getElementById('chooseBtn');
+    const imagePreview  = document.getElementById('imagePreview');
+    const uploadIcon    = document.getElementById('uploadIcon');
+    const zoneTitle     = document.getElementById('zoneTitle');
+    const zoneSub       = document.getElementById('zoneSub');
+    const fileName      = document.getElementById('fileName');
+    const uploadError   = document.getElementById('uploadError');
+    const submitBtn     = document.getElementById('submitBtn');
+
+    /* ==========================================================================
+       UPLOAD PAGE — File Selection
+    ========================================================================== */
+
+    // Open file picker when Choose file button is clicked
+    chooseBtn.addEventListener('click', () => fileInput.click());
+
+    // Also open picker when clicking anywhere on the dropzone (except the button)
+    dropzone.addEventListener('click', (e) => {
+      if (e.target !== chooseBtn) fileInput.click();
+    });
+
+    // Handle file selected via picker
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (file) handleFileSelected(file);
+    });
+
+    /* ==========================================================================
+       UPLOAD PAGE — Drag and Drop
+    ========================================================================== */
+
+    dropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropzone.classList.add('is-drag-over');
+    });
+
+    dropzone.addEventListener('dragleave', () => {
+      dropzone.classList.remove('is-drag-over');
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('is-drag-over');
+
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        // Sync dropped file into the hidden input so it submits with the form
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        fileInput.files = dataTransfer.files;
+        handleFileSelected(file);
+      }
+    });
+
+    /* ==========================================================================
+       UPLOAD PAGE — File Validation + Preview
+    ========================================================================== */
+
+    function handleFileSelected(file) {
+      clearError();
+
+      // Validate type
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        showError('Only JPG, PNG, and WEBP images are accepted.');
+        fileInput.value = '';
+        return;
+      }
+
+      // Validate size
+      if (file.size > MAX_FILE_SIZE_B) {
+        showError(`File is too large. Maximum size is ${MAX_FILE_SIZE_MB}MB.`);
+        fileInput.value = '';
+        return;
+      }
+
+      // Show preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        imagePreview.src = e.target.result;
+        imagePreview.classList.add('is-visible');
+      };
+      reader.readAsDataURL(file);
+
+      // Update zone state
+      uploadIcon.style.display    = 'none';
+      zoneTitle.textContent       = 'Image selected';
+      zoneSub.style.display       = 'none';
+      fileName.textContent        = file.name;
+      fileName.classList.add('is-visible');
+      dropzone.classList.add('is-file-loaded');
+    }
+
+    /* ==========================================================================
+       UPLOAD PAGE — Form Submission
+    ========================================================================== */
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearError();
+
+      // Guard — no file selected
+      if (!fileInput.files || fileInput.files.length === 0) {
+        showError('Please select an image before analyzing.');
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const formData = new FormData(form);
+
+        const response = await fetch(FLASK_ENDPOINT, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const data = await response.json().catch(() => ({}));
+          throw new Error(data.error || `Server error: ${response.status}`);
+        }
+
+        // On success redirect to results page
+        // Flask will return the listing id or redirect directly
+        const data = await response.json();
+        window.location.href = `results.html?id=${data.id || ''}`;
+
+      } catch (err) {
+        showError(err.message || 'Something went wrong. Please try again.');
+        setLoading(false);
+      }
+    });
+
+    /* ==========================================================================
+       UPLOAD PAGE — UI Helpers
+    ========================================================================== */
+
+    function setLoading(isLoading) {
+      submitBtn.disabled = isLoading;
+      submitBtn.classList.toggle('is-loading', isLoading);
+    }
+
+    function showError(message) {
+      uploadError.textContent = message;
+      uploadError.classList.add('is-visible');
+    }
+
+    function clearError() {
+      uploadError.textContent = '';
+      uploadError.classList.remove('is-visible');
+    }
+  </script>
+
+</body>
+</html>

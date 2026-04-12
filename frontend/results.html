@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EyeSell — Results</title>
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .results-body { max-width: 720px; margin: 0 auto; padding: 32px 24px; }
+
+    .price-banner { background: var(--blue-dark); border-radius: 10px; padding: 20px 24px; margin-bottom: 20px; }
+    .pb-label { font-size: 11px; color: #85B7EB; margin-bottom: 4px; }
+    .pb-price { font-size: 30px; font-weight: 500; color: var(--white); margin-bottom: 4px; }
+    .pb-sub { font-size: 12px; color: #85B7EB; }
+
+    .product-card { background: var(--white); border: 0.5px solid var(--gray-border); border-radius: 10px; padding: 18px 22px; margin-bottom: 16px; display: flex; align-items: flex-start; gap: 16px; }
+    .product-img { width: 80px; height: 80px; background: var(--blue-pale); border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--blue-light); font-family: 'DM Mono', monospace; }
+    .product-info { flex: 1; }
+    .confidence { display: inline-flex; align-items: center; gap: 5px; background: var(--green-pale); color: var(--green-dark); font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; margin-bottom: 8px; }
+    .conf-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+    .product-name { font-size: 18px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+    .product-model { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag { background: var(--blue-pale); color: var(--blue-dark); font-size: 12px; padding: 3px 10px; border-radius: 20px; }
+
+    .similar-label { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+    .listing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+    .listing-card { background: var(--white); border: 0.5px solid var(--gray-border); border-radius: 8px; overflow: hidden; }
+    .listing-img { background: var(--blue-pale); height: 90px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--blue-light); font-family: 'DM Mono', monospace; }
+    .listing-info { padding: 10px 14px; }
+    .listing-price { font-size: 15px; font-weight: 500; color: var(--green); margin-bottom: 3px; }
+    .listing-name  { font-size: 12px; color: var(--text-muted); }
+
+    .sources-card { background: var(--white); border: 0.5px solid var(--gray-border); border-radius: 10px; padding: 18px 22px; margin-bottom: 18px; }
+    .sources-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 14px; }
+    .source-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid var(--gray-border); }
+    .source-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .source-name { font-size: 14px; color: var(--text); }
+    .source-count { font-size: 12px; color: var(--gray-text); }
+    .source-price { font-size: 15px; font-weight: 500; color: var(--green); }
+    .bar-wrap { width: 80px; height: 4px; background: var(--gray-bg); border-radius: 2px; }
+    .bar { height: 4px; border-radius: 2px; background: var(--green); }
+
+    .action-row { display: flex; gap: 10px; }
+    .btn-primary { flex: 1; background: var(--green); color: var(--white); font-size: 14px; font-weight: 500; padding: 13px; border-radius: 6px; border: none; cursor: pointer; font-family: inherit; text-align: center; }
+    .btn-outline  { flex: 1; border: 0.5px solid var(--gray-border); color: var(--text); font-size: 14px; padding: 13px; border-radius: 6px; background: var(--white); cursor: pointer; font-family: inherit; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a class="logo" href="index.html">Eye<span>Sell</span></a>
+    <div class="nav-links">
+      <a class="nav-login" href="upload.html">← New search</a>
+    </div>
+  </nav>
+
+  <div class="results-body">
+
+    <div class="price-banner">
+      <div class="pb-label">Suggested price range</div>
+      <div class="pb-price">$45 — $72</div>
+      <div class="pb-sub">Based on 14 similar listings · eBay, Poshmark, OfferUp</div>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img">img</div>
+      <div class="product-info">
+        <div class="confidence"><div class="conf-dot"></div>94% confidence</div>
+        <div class="product-name">Nike Air Max 90</div>
+        <div class="product-model">Size 10 · Used condition</div>
+        <div class="tags">
+          <span class="tag">Nike</span>
+          <span class="tag">Air Max</span>
+          <span class="tag">sneakers</span>
+          <span class="tag">shoes</span>
+          <span class="tag">size 10</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="similar-label">Similar listings found</div>
+
+    <div class="listing-grid">
+      <div class="listing-card"><div class="listing-img">img</div><div class="listing-info"><div class="listing-price">$68</div><div class="listing-name">Nike Air Max 90 — eBay</div></div></div>
+      <div class="listing-card"><div class="listing-img">img</div><div class="listing-info"><div class="listing-price">$52</div><div class="listing-name">Air Max 90 — FB Mkt</div></div></div>
+      <div class="listing-card"><div class="listing-img">img</div><div class="listing-info"><div class="listing-price">$71</div><div class="listing-name">Nike Sneakers — Poshmark</div></div></div>
+      <div class="listing-card"><div class="listing-img">img</div><div class="listing-info"><div class="listing-price">$45</div><div class="listing-name">Used Shoes — OfferUp</div></div></div>
+    </div>
+
+    <div class="sources-card">
+      <div class="sources-title">Price breakdown by source</div>
+      <div class="source-row"><div><div class="source-name">eBay</div><div class="source-count">6 listings</div></div><div class="bar-wrap"><div class="bar" style="width:80%"></div></div><div class="source-price">$68 avg</div></div>
+      <div class="source-row"><div><div class="source-name">Facebook Marketplace</div><div class="source-count">4 listings</div></div><div class="bar-wrap"><div class="bar" style="width:60%"></div></div><div class="source-price">$52 avg</div></div>
+      <div class="source-row"><div><div class="source-name">Poshmark</div><div class="source-count">3 listings</div></div><div class="bar-wrap"><div class="bar" style="width:90%"></div></div><div class="source-price">$71 avg</div></div>
+      <div class="source-row"><div><div class="source-name">OfferUp</div><div class="source-count">1 listing</div></div><div class="bar-wrap"><div class="bar" style="width:45%"></div></div><div class="source-price">$45 avg</div></div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-primary" onclick="window.location.href='generate.html'">Generate my listing →</button>
+      <button class="btn-outline">Save results</button>
+    </div>
+
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EyeSell — Dashboard</title>
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .dash-body { max-width: 860px; margin: 0 auto; padding: 36px 24px; }
+
+    .dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .dash-title { font-size: 22px; font-weight: 500; color: var(--text); }
+    .dash-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+    .stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-bottom: 24px; }
+    .stat { background: var(--white); border: 0.5px solid var(--gray-border); border-radius: 10px; padding: 20px; text-align: center; }
+    .stat-val { font-size: 28px; font-weight: 500; color: var(--blue-dark); margin-bottom: 4px; }
+    .stat-val.green { color: var(--green); }
+    .stat-label { font-size: 12px; color: var(--text-muted); }
+
+    .section-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 12px; }
+
+    .table-wrap { background: var(--white); border: 0.5px solid var(--gray-border); border-radius: 10px; overflow: hidden; margin-bottom: 24px; }
+    .table-head { display: grid; grid-template-columns: minmax(0,1fr) 120px 120px 80px; padding: 10px 18px; background: var(--gray-bg); border-bottom: 0.5px solid var(--gray-border); }
+    .th { font-size: 11px; color: var(--gray-text); font-weight: 500; text-transform: uppercase; letter-spacing: .07em; }
+    .table-row { display: grid; grid-template-columns: minmax(0,1fr) 120px 120px 80px; padding: 14px 18px; border-bottom: 0.5px solid var(--gray-border); align-items: center; }
+    .table-row:last-child { border-bottom: none; }
+    .table-row:hover { background: var(--gray-bg); }
+    .td { font-size: 14px; color: var(--text); }
+    .td-price { font-size: 14px; font-weight: 500; color: var(--green); }
+    .td-date { font-size: 13px; color: var(--gray-text); }
+    .td-action a { font-size: 12px; color: var(--blue-mid); }
+
+    .status-badge { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 20px; }
+    .status-saved { background: var(--green-pale); color: var(--green-dark); }
+    .status-draft { background: var(--gray-bg); color: var(--gray-text); }
+
+    .empty-state { text-align: center; padding: 48px 24px; color: var(--text-muted); }
+    .empty-title { font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 8px; }
+    .empty-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a class="logo" href="index.html">Eye<span>Sell</span></a>
+    <div class="nav-links">
+      <span class="nav-link">Aziz</span>
+      <a class="btn-green" href="upload.html">+ New search</a>
+    </div>
+  </nav>
+
+  <div class="dash-body">
+    <div class="dash-header">
+      <div>
+        <div class="dash-title">My listings</div>
+        <div class="dash-sub">All your saved scans and generated listings</div>
+      </div>
+      <a class="btn-blue" href="upload.html">Scan new item</a>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-val">12</div>
+        <div class="stat-label">Listings saved</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val green">$847</div>
+        <div class="stat-label">Est. total value</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val">38</div>
+        <div class="stat-label">Searches run</div>
+      </div>
+    </div>
+
+    <div class="section-title">Recent listings</div>
+
+    <div class="table-wrap">
+      <div class="table-head">
+        <div class="th">Item</div>
+        <div class="th">Price</div>
+        <div class="th">Date</div>
+        <div class="th">Status</div>
+      </div>
+      <div class="table-row">
+        <div class="td">Nike Air Max 90</div>
+        <div class="td-price">$62</div>
+        <div class="td-date">Apr 10, 2026</div>
+        <div><span class="status-badge status-saved">Saved</span></div>
+      </div>
+      <div class="table-row">
+        <div class="td">Sony WH-1000XM4</div>
+        <div class="td-price">$140</div>
+        <div class="td-date">Apr 8, 2026</div>
+        <div><span class="status-badge status-saved">Saved</span></div>
+      </div>
+      <div class="table-row">
+        <div class="td">iPad Air Gen 4</div>
+        <div class="td-price">$310</div>
+        <div class="td-date">Apr 5, 2026</div>
+        <div><span class="status-badge status-saved">Saved</span></div>
+      </div>
+      <div class="table-row">
+        <div class="td">Levi's 501 Jeans</div>
+        <div class="td-price">$35</div>
+        <div class="td-date">Apr 3, 2026</div>
+        <div><span class="status-badge status-draft">Draft</span></div>
+      </div>
+      <div class="table-row">
+        <div class="td">Canon EOS Rebel T7</div>
+        <div class="td-price">$220</div>
+        <div class="td-date">Apr 1, 2026</div>
+        <div><span class="status-badge status-saved">Saved</span></div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

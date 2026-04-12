@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EyeSell — Generate Listing</title>
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .gen-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .gen-title { font-size: 24px; font-weight: 500; color: var(--text); }
+    .ai-badge { font-size: 12px; color: var(--green); font-weight: 500; background: var(--green-pale); padding: 4px 12px; border-radius: 20px; }
+
+    .gen-card { background: var(--white); border: 0.5px solid var(--gray-border); border-radius: 10px; padding: 24px; margin-bottom: 16px; }
+    .card-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 0.5px solid var(--gray-border); }
+
+    .tags-row { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag { background: var(--blue-pale); color: var(--blue-dark); font-size: 12px; padding: 4px 12px; border-radius: 20px; cursor: pointer; }
+    .tag-add { background: var(--gray-bg); color: var(--gray-text); font-size: 12px; padding: 4px 12px; border-radius: 20px; border: 0.5px dashed var(--gray-border); cursor: pointer; }
+
+    .price-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .price-box { background: var(--gray-bg); border-radius: 8px; padding: 14px 16px; }
+    .price-box-label { font-size: 11px; color: var(--gray-text); margin-bottom: 4px; }
+    .price-box-val { font-size: 22px; font-weight: 500; color: var(--green); }
+
+    .your-price { background: var(--green-pale); border: 0.5px solid #97C459; border-radius: 8px; padding: 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .yp-label { font-size: 13px; color: var(--green-dark); }
+    .yp-val { font-size: 26px; font-weight: 500; color: var(--green-dark); }
+
+    .price-row { display: flex; gap: 8px; }
+    .adjust-btn { border: 0.5px solid var(--gray-border); border-radius: 6px; padding: 11px 18px; font-size: 13px; color: var(--text-muted); background: var(--gray-bg); cursor: pointer; font-family: inherit; white-space: nowrap; }
+
+    .action-row { display: flex; gap: 10px; margin-top: 4px; }
+    .btn-copy { flex: 1; background: var(--green); color: var(--white); font-size: 14px; font-weight: 500; padding: 13px; border-radius: 6px; border: none; cursor: pointer; font-family: inherit; }
+    .btn-save { flex: 1; background: var(--blue-dark); color: var(--white); font-size: 14px; font-weight: 500; padding: 13px; border-radius: 6px; border: none; cursor: pointer; font-family: inherit; }
+    .action-note { font-size: 12px; color: var(--gray-text); text-align: center; margin-top: 10px; }
+
+    .copied-toast { display: none; background: var(--green-dark); color: var(--white); font-size: 13px; padding: 10px 18px; border-radius: 6px; text-align: center; margin-top: 12px; }
+    .copied-toast.show { display: block; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a class="logo" href="index.html">Eye<span>Sell</span></a>
+    <div class="nav-links">
+      <a class="nav-link" href="dashboard.html">Dashboard</a>
+      <a class="btn-green" href="upload.html">+ New search</a>
+    </div>
+  </nav>
+
+  <div class="page-body">
+    <div class="gen-header">
+      <div class="gen-title">Generate Listing</div>
+      <span class="ai-badge">AI generated</span>
+    </div>
+
+    <div class="gen-card">
+      <div class="card-title">Product details</div>
+
+      <div class="field">
+        <div class="field-label">Title</div>
+        <input class="field-input" id="titleField" type="text" value="Nike Air Max — Size 10 — Good Condition">
+      </div>
+
+      <div class="field">
+        <div class="field-label">Description</div>
+        <textarea class="field-textarea" id="descField">Selling a pair of Nike Air Max in great used condition. Minor wear on the soles, uppers are clean. Size 10.</textarea>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Tags</div>
+        <div class="tags-row">
+          <span class="tag">Nike Air Max </span>
+          <span class="tag">sneakers</span>
+          <span class="tag">shoes</span>
+          <span class="tag">size 10</span>
+          <span class="tag">Nike</span>
+          <span class="tag-add">+ Add tag</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="gen-card">
+      <div class="card-title">Pricing</div>
+
+      <div class="price-grid">
+        <div class="price-box"><div class="price-box-label">Market low</div><div class="price-box-val">$45</div></div>
+        <div class="price-box"><div class="price-box-label">Market high</div><div class="price-box-val">$72</div></div>
+      </div>
+
+      <div class="your-price">
+        <div class="yp-label">Your suggested price</div>
+        <div class="yp-val">$62</div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Edit price</div>
+        <div class="price-row">
+          <input class="field-input" id="priceField" type="text" value="$62" style="flex:1">
+          <button class="adjust-btn">Adjust</button>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button class="btn-copy" id="copyBtn">Copy listing</button>
+        <button class="btn-save" onclick="window.location.href='dashboard.html'">Save to dashboard</button>
+      </div>
+      <div class="copied-toast" id="toast">Listing copied to clipboard!</div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('copyBtn').addEventListener('click', function() {
+      const title = document.getElementById('titleField').value;
+      const desc = document.getElementById('descField').value;
+      const price = document.getElementById('priceField').value;
+      const text = `${title}\n\n${desc}\n\nPrice: ${price}`;
+      navigator.clipboard.writeText(text).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+      });
+    });
+  </script>
+
+</body>
+</html>

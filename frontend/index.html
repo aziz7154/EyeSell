@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EyeSell — Smart Pricing. Easy Selling.</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500&family=DM+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --blue-800: #0C447C;
+      --blue-600: #185FA5;
+      --green-600: #3B6D11;
+      --green-400: #639922;
+      --ink:     #0F0F0D;
+      --muted:   #5C5B57;
+      --subtle:  #9B9A96;
+      --border:  #E2E0DA;
+      --surface: #F7F6F2;
+      --white:   #FFFFFF;
+      --font:    'DM Sans', system-ui, sans-serif;
+      --mono:    'DM Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html   { scroll-behavior: smooth; }
+    body   { font-family: var(--font); color: var(--ink); background: var(--white); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    a      { text-decoration: none; color: inherit; }
+    button { font-family: var(--font); cursor: pointer; }
+
+    .container {
+      width: 100%;
+      max-width: 1080px;
+      margin-inline: auto;
+      padding-inline: 40px;
+    }
+
+    /* NAV */
+    .nav {
+      height: 58px;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav .container  { display: flex; align-items: center; justify-content: space-between; }
+    .nav__logo       { font-size: 17px; font-weight: 500; color: var(--blue-800); }
+    .nav__logo em    { font-style: normal; color: var(--green-400); }
+    .nav__links      { display: flex; align-items: center; gap: 24px; }
+    .nav__link       { font-size: 14px; color: var(--muted); }
+    .nav__link:hover { color: var(--ink); }
+    .nav__actions    { display: flex; gap: 8px; }
+
+    .btn-ghost {
+      font-size: 13px;
+      color: var(--ink);
+      padding: 7px 15px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+    }
+    .btn-ghost:hover { background: var(--surface); }
+
+    .btn-primary {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--white);
+      background: var(--blue-800);
+      padding: 7px 16px;
+      border-radius: 6px;
+      border: none;
+      display: inline-block;
+    }
+    .btn-primary:hover { background: #0a3a6a; }
+
+    .btn-cta {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--white);
+      background: var(--green-400);
+      padding: 12px 26px;
+      border-radius: 6px;
+      border: none;
+      display: inline-block;
+    }
+    .btn-cta:hover { background: var(--green-600); }
+
+    .btn-outline-white {
+      font-size: 15px;
+      color: rgba(255,255,255,0.75);
+      padding: 12px 26px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: transparent;
+      display: inline-block;
+    }
+    .btn-outline-white:hover { border-color: rgba(255,255,255,0.4); color: var(--white); }
+
+    /* HERO */
+    .hero { background: var(--blue-800); padding: 72px 0 64px; }
+
+    .hero__headline {
+      font-size: clamp(34px, 4.5vw, 52px);
+      font-weight: 500;
+      color: var(--white);
+      line-height: 1.1;
+      letter-spacing: -.02em;
+      max-width: 620px;
+      margin-bottom: 18px;
+    }
+
+    .hero__headline em { font-style: normal; color: var(--green-400); }
+
+    .hero__sub {
+      font-size: 16px;
+      color: rgba(255,255,255,0.55);
+      max-width: 440px;
+      line-height: 1.65;
+      margin-bottom: 32px;
+    }
+
+    .hero__actions { display: flex; gap: 10px; align-items: center; }
+
+    /* FEATURES */
+    .features { border-bottom: 1px solid var(--border); }
+
+    .features .container {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+    }
+
+    .feature {
+      padding: 36px 32px;
+      border-right: 1px solid var(--border);
+    }
+    .feature:last-child { border-right: none; }
+
+    .feature__icon {
+      width: 40px;
+      height: 40px;
+      background: #E6F1FB;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .feature__title { font-size: 15px; font-weight: 500; color: var(--ink); margin-bottom: 6px; }
+    .feature__desc  { font-size: 13px; color: var(--muted); line-height: 1.65; }
+
+    /* HOW IT WORKS */
+    .how { background: var(--surface); padding: 64px 0; border-bottom: 1px solid var(--border); }
+
+    .how__label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--subtle);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      margin-bottom: 24px;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--white);
+    }
+
+    .step { padding: 24px 22px; border-right: 1px solid var(--border); }
+    .step:last-child { border-right: none; }
+
+    .step__num   { font-family: var(--mono); font-size: 11px; color: var(--subtle); display: block; margin-bottom: 12px; }
+    .step__title { font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: 5px; }
+    .step__desc  { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+    /* CTA */
+    .cta { background: var(--ink); padding: 64px 0; }
+
+    .cta .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+    }
+
+    .cta__title { font-size: 28px; font-weight: 500; color: var(--white); letter-spacing: -.02em; margin-bottom: 6px; }
+    .cta__sub   { font-size: 14px; color: rgba(255,255,255,0.4); }
+
+    /* FOOTER */
+    .footer { border-top: 1px solid var(--border); padding: 24px 0; }
+
+    .footer .container { display: flex; align-items: center; justify-content: space-between; }
+    .footer__logo      { font-size: 15px; font-weight: 500; color: var(--blue-800); }
+    .footer__logo em   { font-style: normal; color: var(--green-400); }
+    .footer__links     { display: flex; gap: 20px; }
+    .footer__link      { font-size: 13px; color: var(--muted); }
+    .footer__link:hover { color: var(--ink); }
+    .footer__copy      { font-size: 12px; color: var(--subtle); }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="container">
+      <a class="nav__logo" href="index.html">Eye<em>Sell</em></a>
+      <div class="nav__links">
+        <a class="nav__link" href="#how">How it works</a>
+        <a class="nav__link" href="#">Pricing</a>
+      </div>
+      <div class="nav__actions">
+        <a class="btn-ghost" href="login.html">Log in</a>
+        <a class="btn-primary" href="login.html">Sign up</a>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="container">
+      <h1 class="hero__headline">
+        Turn any photo into a<br>
+        <em>ready-to-post listing.</em>
+      </h1>
+      <p class="hero__sub">
+        Upload an image, get an instant price range and listing description based on real market data.
+      </p>
+      <div class="hero__actions">
+        <a class="btn-cta" href="upload.html">Get started free</a>
+        <a class="btn-outline-white" href="#how">How it works</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="container">
+      <div class="feature">
+        <div class="feature__icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="6.5" stroke="#185FA5" stroke-width="1.5"/><circle cx="10" cy="10" r="2.5" fill="#185FA5"/></svg>
+        </div>
+        <div class="feature__title">Image recognition</div>
+        <div class="feature__desc">Google Cloud Vision API identifies your product instantly from any photo.</div>
+      </div>
+      <div class="feature">
+        <div class="feature__icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 15L7 10L10 13L14 7L18 4" stroke="#185FA5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="feature__title">Real-time pricing</div>
+        <div class="feature__desc">Live data from eBay, Craigslist, Facebook Marketplace, Amazon, and Etsy.</div>
+      </div>
+      <div class="feature">
+        <div class="feature__icon">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="4" width="14" height="12" rx="2" stroke="#185FA5" stroke-width="1.5"/><path d="M6 9h8M6 12h5" stroke="#185FA5" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <div class="feature__title">Auto-generated listings</div>
+        <div class="feature__desc">Title, description, tags, and suggested price — ready to copy and post.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="how" id="how">
+    <div class="container">
+      <div class="how__label">How it works</div>
+      <div class="steps">
+        <div class="step">
+          <span class="step__num">01</span>
+          <div class="step__title">Upload a photo</div>
+          <div class="step__desc">Drag and drop or browse. JPG, PNG, WEBP up to 10MB.</div>
+        </div>
+        <div class="step">
+          <span class="step__num">02</span>
+          <div class="step__title">AI identifies it</div>
+          <div class="step__desc">Vision API reads the image and matches it to a product.</div>
+        </div>
+        <div class="step">
+          <span class="step__num">03</span>
+          <div class="step__title">Get pricing data</div>
+          <div class="step__desc">Live price range pulled from five active marketplaces.</div>
+        </div>
+        <div class="step">
+          <span class="step__num">04</span>
+          <div class="step__title">Copy your listing</div>
+          <div class="step__desc">Title, description, tags, and price — one click to copy.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="container">
+      <div>
+        <div class="cta__title">Ready to sell smarter?</div>
+        <div class="cta__sub">Free to use. No credit card required.</div>
+      </div>
+      <a class="btn-cta" href="upload.html">Get started free</a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <a class="footer__logo" href="index.html">Eye<em>Sell</em></a>
+      <div class="footer__links">
+        <a class="footer__link" href="#how">How it works</a>
+        <a class="footer__link" href="#">About</a>
+        <a class="footer__link" href="#">Contact</a>
+      </div>
+      <p class="footer__copy">Wright State University · CEG 7370 · Spring 2026</p>
+    </div>
+  </footer>
+
+</body>
+</html>

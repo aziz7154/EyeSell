@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EyeSell — Log in</title>
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    /* ==========================================================================
+       AUTH PAGE STYLES
+    ========================================================================== */
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: var(--gray-bg);
+      padding: 24px;
+    }
+
+    /* --------------------------------------------------------------------------
+       Card
+    -------------------------------------------------------------------------- */
+
+    .auth-card {
+      background: var(--white);
+      border: 0.5px solid var(--gray-border);
+      border-radius: 12px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    /* --------------------------------------------------------------------------
+       Header
+    -------------------------------------------------------------------------- */
+
+    .auth-card__logo {
+      font-size: 26px;
+      font-weight: 500;
+      color: var(--blue-dark);
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    .auth-card__logo span { color: var(--green); }
+
+    .auth-card__subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    /* --------------------------------------------------------------------------
+       Tab Row
+    -------------------------------------------------------------------------- */
+
+    .tab-row {
+      display: flex;
+      margin-bottom: 24px;
+      border: 0.5px solid var(--gray-border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .tab-row__tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--text-muted);
+      background: var(--gray-bg);
+      border: none;
+      font-family: inherit;
+      transition: background-color 0.15s, color 0.15s;
+    }
+
+    .tab-row__tab.is-active {
+      background: var(--blue-dark);
+      color: var(--white);
+      font-weight: 500;
+    }
+
+    /* --------------------------------------------------------------------------
+       Forms
+    -------------------------------------------------------------------------- */
+
+    .auth-form { display: none; }
+    .auth-form.is-active { display: block; }
+
+    .auth-form__input {
+      width: 100%;
+      border: 0.5px solid var(--gray-border);
+      border-radius: 6px;
+      padding: 12px 14px;
+      font-size: 13px;
+      color: var(--text);
+      background: var(--white);
+      font-family: inherit;
+      outline: none;
+      margin-bottom: 10px;
+      display: block;
+      transition: border-color 0.15s;
+    }
+
+    .auth-form__input::placeholder { color: var(--gray-text); }
+    .auth-form__input:focus { border-color: var(--blue-light); }
+
+    .auth-form__input.is-error { border-color: #E24B4A; }
+
+    .auth-form__error {
+      font-size: 12px;
+      color: #E24B4A;
+      margin-top: -6px;
+      margin-bottom: 10px;
+      display: none;
+    }
+
+    .auth-form__error.is-visible { display: block; }
+
+    .auth-form__forgot {
+      text-align: right;
+      margin-bottom: 16px;
+      margin-top: -4px;
+    }
+
+    .auth-form__forgot a { font-size: 12px; color: var(--blue-mid); }
+
+    .auth-form__submit {
+      width: 100%;
+      background: var(--blue-dark);
+      color: var(--white);
+      font-size: 14px;
+      font-weight: 500;
+      padding: 13px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      margin-bottom: 16px;
+      transition: background-color 0.15s;
+    }
+
+    .auth-form__submit:hover { background: #0a3a6a; }
+
+    /* --------------------------------------------------------------------------
+       Divider
+    -------------------------------------------------------------------------- */
+
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .auth-divider__line {
+      flex: 1;
+      height: 0.5px;
+      background: var(--gray-border);
+    }
+
+    .auth-divider__text { font-size: 11px; color: var(--gray-text); }
+
+    /* --------------------------------------------------------------------------
+       Google Button
+    -------------------------------------------------------------------------- */
+
+    .btn-google {
+      width: 100%;
+      border: 0.5px solid var(--gray-border);
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 13px;
+      color: var(--text);
+      text-align: center;
+      background: var(--white);
+      cursor: pointer;
+      font-family: inherit;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 0.15s;
+    }
+
+    .btn-google:hover { background: var(--gray-bg); }
+
+    /* --------------------------------------------------------------------------
+       Footer Link
+    -------------------------------------------------------------------------- */
+
+    .auth-card__switch {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .auth-card__switch button {
+      background: none;
+      border: none;
+      color: var(--green);
+      font-weight: 500;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 0;
+    }
+
+    .auth-card__switch button:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <div class="auth-card">
+
+    <!-- Logo -->
+    <div class="auth-card__logo">Eye<span>Sell</span></div>
+    <p class="auth-card__subtitle" id="authSubtitle">Sign in to your account</p>
+
+    <!-- Tabs -->
+    <div class="tab-row" role="tablist">
+      <button
+        class="tab-row__tab is-active"
+        id="tabLogin"
+        role="tab"
+        aria-selected="true"
+        aria-controls="formLogin"
+        onclick="switchTab('login')"
+      >Log in</button>
+      <button
+        class="tab-row__tab"
+        id="tabSignup"
+        role="tab"
+        aria-selected="false"
+        aria-controls="formSignup"
+        onclick="switchTab('signup')"
+      >Sign up</button>
+    </div>
+
+    <!-- Log In Form -->
+    <div class="auth-form is-active" id="formLogin" role="tabpanel" aria-labelledby="tabLogin">
+
+      <input class="auth-form__input" id="loginEmail" type="email" placeholder="Email address" autocomplete="email">
+      <input class="auth-form__input" id="loginPassword" type="password" placeholder="Password" autocomplete="current-password">
+      <p class="auth-form__error" id="loginError">Please enter a valid email and password.</p>
+
+      <div class="auth-form__forgot"><a href="#">Forgot password?</a></div>
+
+      <button class="auth-form__submit" onclick="handleLogin()">Log in</button>
+
+      <div class="auth-divider">
+        <div class="auth-divider__line"></div>
+        <span class="auth-divider__text">or continue with</span>
+        <div class="auth-divider__line"></div>
+      </div>
+
+      <button class="btn-google" onclick="handleGoogle()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M15.68 8.18c0-.57-.05-1.11-.14-1.64H8v3.1h4.3a3.68 3.68 0 01-1.6 2.42v2h2.58c1.51-1.39 2.38-3.44 2.38-5.88z" fill="#4285F4"/>
+          <path d="M8 16c2.16 0 3.97-.72 5.3-1.94l-2.58-2a4.8 4.8 0 01-7.15-2.52H.9v2.07A8 8 0 008 16z" fill="#34A853"/>
+          <path d="M3.57 9.54A4.8 4.8 0 013.32 8c0-.53.09-1.05.25-1.54V4.39H.9A8 8 0 000 8c0 1.29.31 2.51.9 3.61l2.67-2.07z" fill="#FBBC05"/>
+          <path d="M8 3.18c1.22 0 2.31.42 3.17 1.24l2.37-2.37A7.97 7.97 0 008 0 8 8 0 00.9 4.39L3.57 6.46A4.77 4.77 0 018 3.18z" fill="#EA4335"/>
+        </svg>
+        Continue with Google
+      </button>
+
+      <p class="auth-card__switch">
+        No account?
+        <button onclick="switchTab('signup')">Sign up free</button>
+      </p>
+
+    </div>
+
+    <!-- Sign Up Form -->
+    <div class="auth-form" id="formSignup" role="tabpanel" aria-labelledby="tabSignup">
+
+      <input class="auth-form__input" id="signupName" type="text" placeholder="Full name" autocomplete="name">
+      <input class="auth-form__input" id="signupEmail" type="email" placeholder="Email address" autocomplete="email">
+      <input class="auth-form__input" id="signupPassword" type="password" placeholder="Password" autocomplete="new-password">
+      <input class="auth-form__input" id="signupConfirm" type="password" placeholder="Confirm password" autocomplete="new-password">
+      <p class="auth-form__error" id="signupError">Please fill in all fields correctly.</p>
+
+      <button class="auth-form__submit" onclick="handleSignup()">Create account</button>
+
+      <div class="auth-divider">
+        <div class="auth-divider__line"></div>
+        <span class="auth-divider__text">or continue with</span>
+        <div class="auth-divider__line"></div>
+      </div>
+
+      <button class="btn-google" onclick="handleGoogle()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M15.68 8.18c0-.57-.05-1.11-.14-1.64H8v3.1h4.3a3.68 3.68 0 01-1.6 2.42v2h2.58c1.51-1.39 2.38-3.44 2.38-5.88z" fill="#4285F4"/>
+          <path d="M8 16c2.16 0 3.97-.72 5.3-1.94l-2.58-2a4.8 4.8 0 01-7.15-2.52H.9v2.07A8 8 0 008 16z" fill="#34A853"/>
+          <path d="M3.57 9.54A4.8 4.8 0 013.32 8c0-.53.09-1.05.25-1.54V4.39H.9A8 8 0 000 8c0 1.29.31 2.51.9 3.61l2.67-2.07z" fill="#FBBC05"/>
+          <path d="M8 3.18c1.22 0 2.31.42 3.17 1.24l2.37-2.37A7.97 7.97 0 008 0 8 8 0 00.9 4.39L3.57 6.46A4.77 4.77 0 018 3.18z" fill="#EA4335"/>
+        </svg>
+        Continue with Google
+      </button>
+
+      <p class="auth-card__switch">
+        Already have an account?
+        <button onclick="switchTab('login')">Log in</button>
+      </p>
+
+    </div>
+
+  </div>
+
+  <script>
+    /* ==========================================================================
+       AUTH — Tab Switching
+    ========================================================================== */
+
+    const TABS = {
+      login:  { tab: 'tabLogin',  form: 'formLogin',  subtitle: 'Sign in to your account' },
+      signup: { tab: 'tabSignup', form: 'formSignup', subtitle: 'Create a free account'   },
+    };
+
+    function switchTab(target) {
+      const config = TABS[target];
+
+      // Update tab buttons
+      Object.values(TABS).forEach(({ tab }) => {
+        const el = document.getElementById(tab);
+        const isActive = tab === config.tab;
+        el.classList.toggle('is-active', isActive);
+        el.setAttribute('aria-selected', isActive);
+      });
+
+      // Update forms
+      Object.values(TABS).forEach(({ form }) => {
+        document.getElementById(form).classList.toggle('is-active', form === config.form);
+      });
+
+      // Update subtitle
+      document.getElementById('authSubtitle').textContent = config.subtitle;
+
+      // Clear errors
+      document.querySelectorAll('.auth-form__error').forEach(el => el.classList.remove('is-visible'));
+      document.querySelectorAll('.auth-form__input').forEach(el => el.classList.remove('is-error'));
+    }
+
+    /* ==========================================================================
+       AUTH — Validation Helpers
+    ========================================================================== */
+
+    function isValidEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function showError(errorId, ...inputIds) {
+      document.getElementById(errorId).classList.add('is-visible');
+      inputIds.forEach(id => document.getElementById(id).classList.add('is-error'));
+    }
+
+    function clearErrors(errorId, ...inputIds) {
+      document.getElementById(errorId).classList.remove('is-visible');
+      inputIds.forEach(id => document.getElementById(id).classList.remove('is-error'));
+    }
+
+    /* ==========================================================================
+       AUTH — Log In Handler
+    ========================================================================== */
+
+    function handleLogin() {
+      const email    = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      clearErrors('loginError', 'loginEmail', 'loginPassword');
+
+      if (!isValidEmail(email) || password.length < 1) {
+        showError('loginError', 'loginEmail', 'loginPassword');
+        return;
+      }
+
+      // Redirect to dashboard on success
+      window.location.href = 'dashboard.html';
+    }
+
+    /* ==========================================================================
+       AUTH — Sign Up Handler
+    ========================================================================== */
+
+    function handleSignup() {
+      const name     = document.getElementById('signupName').value.trim();
+      const email    = document.getElementById('signupEmail').value.trim();
+      const password = document.getElementById('signupPassword').value;
+      const confirm  = document.getElementById('signupConfirm').value;
+
+      clearErrors('signupError', 'signupName', 'signupEmail', 'signupPassword', 'signupConfirm');
+
+      if (!name) {
+        document.getElementById('signupError').textContent = 'Please enter your full name.';
+        showError('signupError', 'signupName');
+        return;
+      }
+
+      if (!isValidEmail(email)) {
+        document.getElementById('signupError').textContent = 'Please enter a valid email address.';
+        showError('signupError', 'signupEmail');
+        return;
+      }
+
+      if (password.length < 8) {
+        document.getElementById('signupError').textContent = 'Password must be at least 8 characters.';
+        showError('signupError', 'signupPassword');
+        return;
+      }
+
+      if (password !== confirm) {
+        document.getElementById('signupError').textContent = 'Passwords do not match.';
+        showError('signupError', 'signupPassword', 'signupConfirm');
+        return;
+      }
+
+      // Redirect to dashboard on success
+      window.location.href = 'dashboard.html';
+    }
+
+    /* ==========================================================================
+       AUTH — Google Handler (placeholder)
+    ========================================================================== */
+
+    function handleGoogle() {
+      // Wire to Google OAuth when backend is ready
+      alert('Google OAuth — connect to Flask backend');
+    }
+  </script>
+
+</body>
+</html>
