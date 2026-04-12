@@ -1,9 +1,7 @@
 # EyeSell
 ### Smart Pricing. Easy Selling.
 
-EyeSell is an AI-powered product listing assistant that turns a photo into a ready-to-post resale listing. Upload an image, and EyeSell identifies the product, pulls real-time price data from platforms like eBay, Craigslist, and Facebook Marketplace, and generates a complete listing with title, description, tags, and price range — all in seconds.
-
-Built for CEG 7370 – Distributed Computing at Wright State University.
+EyeSell is an AI-powered product listing assistant that turns a photo into a ready-to-post resale listing. Upload an image, and EyeSell identifies the product using Google Cloud Vision API, pulls real-time price data from platforms like eBay, Craigslist, and Facebook Marketplace, and generates a complete listing with title, description, tags, and price range — all in seconds.
 
 **Team:** David Tincher, Aziz Saleh, Jake Hamblin
 
@@ -11,12 +9,11 @@ Built for CEG 7370 – Distributed Computing at Wright State University.
 
 ## Features
 
-- Image-based product identification — upload a photo or use your camera
-- Reverse image search via Google Custom Search API
-- Real-time price aggregation from eBay, Craigslist, and Facebook Marketplace
+- Image-based product identification via Google Cloud Vision API
+- Real-time price aggregation from eBay, Craigslist, Facebook Marketplace, Amazon, and Etsy
 - Auto-generated listings with title, description, tags, and price range
+- User accounts and saved listings via PostgreSQL
 - Cloud-deployed on AWS EC2 with Nginx reverse proxy and SSL via Certbot
-- PostgreSQL for user accounts and saved listings
 
 ---
 
@@ -24,11 +21,12 @@ Built for CEG 7370 – Distributed Computing at Wright State University.
 
 | Layer | Technology |
 |---|---|
-| Backend | Django, Django REST Framework |
-| Frontend | HTML, CSS, JavaScript |
+| Backend | Flask, Flask-SQLAlchemy, Flask-Migrate |
+| Frontend | HTML, CSS, JavaScript (React) |
 | Database | PostgreSQL |
 | Cloud | AWS EC2, Nginx, Certbot (SSL) |
-| AI / Search | Google Custom Search JSON API |
+| AI / Vision | Google Cloud Vision API |
+| Search / Pricing | Google Custom Search JSON API |
 | Storage | Local file storage (S3 optional) |
 | Version Control | GitHub |
 
@@ -40,6 +38,7 @@ Built for CEG 7370 – Distributed Computing at Wright State University.
 
 - Python 3.10+
 - PostgreSQL
+- Node.js (for React frontend)
 - Git
 
 ### Installation
@@ -51,10 +50,10 @@ cd EyeSell
 
 # Create and activate virtual environment
 py -m venv venv
-venv\Scripts\activate  # Windows
+venv\Scripts\activate       # Windows
 # source venv/bin/activate  # Mac/Linux
 
-# Install dependencies
+# Install Python dependencies
 pip install -r requirements.txt
 ```
 
@@ -63,7 +62,7 @@ pip install -r requirements.txt
 Create a `.env` file in the root directory:
 
 ```
-SECRET_KEY=your-django-secret-key
+SECRET_KEY=your-flask-secret-key
 DEBUG=True
 DB_NAME=eyesell_db
 DB_USER=postgres
@@ -72,20 +71,74 @@ DB_HOST=localhost
 DB_PORT=5432
 GOOGLE_API_KEY=your-google-api-key
 GOOGLE_SEARCH_ENGINE_ID=your-search-engine-id
+GOOGLE_VISION_API_KEY=your-vision-api-key
 ```
 
-## Project Structure
+### Database Setup
+
+```bash
+# Create the PostgreSQL database
+psql -U postgres -c "CREATE DATABASE eyesell_db;"
+
+# Run migrations
+flask db upgrade
+```
+
+### Run the Development Server
+
+```bash
+# Backend
+flask --app run run
+
+# Frontend (in a separate terminal)
+cd frontend
+npm install
+npm run dev
+```
+
+Backend runs at `http://localhost:5000`
+Frontend runs at `http://localhost:5173`
+
+---
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/` | Health check |
+| POST | `/upload` | Upload image, save to disk |
+| POST | `/analyze` | Run Google Cloud Vision API |
+| POST | `/search` | Fetch pricing via Google Search API |
+| POST | `/listings` | Save listing to database |
+| GET | `/listings` | Get all listings for a user |
+| POST | `/auth/register` | Create user account |
+| POST | `/auth/login` | Authenticate user |
+
+---
+
+## Sample Usage
+
+**Input:** Upload a photo of a used iPhone
+
+**Output:**
+```json
+{
+  "name": "Apple iPhone 12 64GB Black",
+  "description": "Gently used iPhone 12 in great condition. Minor wear on edges.",
+  "tags": ["iPhone", "Apple", "smartphone", "electronics"],
+  "price_range": "$280 - $340",
+  "sources": ["eBay", "Facebook Marketplace"]
+}
+```
+
+---
+
+## Deployment
+
+The app is deployed on an AWS EC2 instance behind an Nginx reverse proxy with HTTPS managed by Certbot.
 
 ```
-EyeSell/
-├── eyesell_backend/        # Django project settings
-├── api/                    # Core app (views, models, serializers)
-├── static/                 # Frontend HTML/CSS/JS
-├── media/                  # Uploaded images
-├── requirements.txt
-├── .env                    # Not committed
-├── .gitignore
-└── README.md
+User → Nginx (SSL) → Flask Backend → PostgreSQL / Google APIs / File Storage
 ```
 
 ---
