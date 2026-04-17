@@ -42,9 +42,6 @@
       margin-bottom: 28px;
     }
 
-    /* --------------------------------------------------------------------------
-       Tab Row
-    -------------------------------------------------------------------------- */
 
     .tab-row {
       display: flex;
@@ -218,9 +215,9 @@
     <!-- Log In Form -->
     <div class="auth-form is-active" id="formLogin" role="tabpanel" aria-labelledby="tabLogin">
 
-      <input class="auth-form__input" id="loginEmail" type="email" placeholder="Email address" autocomplete="email">
+      <input class="auth-form__input" id="loginUsername" type="text" placeholder="Username" autocomplete="username">
       <input class="auth-form__input" id="loginPassword" type="password" placeholder="Password" autocomplete="current-password">
-      <p class="auth-form__error" id="loginError">Please enter a valid email and password.</p>
+      <p class="auth-form__error" id="loginError">Please enter your username and password.</p>
 
       <div class="auth-form__forgot"><a href="#">Forgot password?</a></div>
 
@@ -252,7 +249,7 @@
     <!-- Sign Up Form -->
     <div class="auth-form" id="formSignup" role="tabpanel" aria-labelledby="tabSignup">
 
-      <input class="auth-form__input" id="signupName" type="text" placeholder="Full name" autocomplete="name">
+      <input class="auth-form__input" id="signupName" type="text" placeholder="Username" autocomplete="username">
       <input class="auth-form__input" id="signupEmail" type="email" placeholder="Email address" autocomplete="email">
       <input class="auth-form__input" id="signupPassword" type="password" placeholder="Password" autocomplete="new-password">
       <input class="auth-form__input" id="signupConfirm" type="password" placeholder="Confirm password" autocomplete="new-password">
@@ -285,11 +282,8 @@
 
   </div>
 
+  <script src="api.js"></script>
   <script>
-    /* ==========================================================================
-       AUTH — Tab Switching
-    ========================================================================== */
-
     const TABS = {
       login:  { tab: 'tabLogin',  form: 'formLogin',  subtitle: 'Sign in to your account' },
       signup: { tab: 'tabSignup', form: 'formSignup', subtitle: 'Create a free account'   },
@@ -297,31 +291,19 @@
 
     function switchTab(target) {
       const config = TABS[target];
-
-      // Update tab buttons
       Object.values(TABS).forEach(({ tab }) => {
         const el = document.getElementById(tab);
         const isActive = tab === config.tab;
         el.classList.toggle('is-active', isActive);
         el.setAttribute('aria-selected', isActive);
       });
-
-      // Update forms
       Object.values(TABS).forEach(({ form }) => {
         document.getElementById(form).classList.toggle('is-active', form === config.form);
       });
-
-      // Update subtitle
       document.getElementById('authSubtitle').textContent = config.subtitle;
-
-      // Clear errors
       document.querySelectorAll('.auth-form__error').forEach(el => el.classList.remove('is-visible'));
       document.querySelectorAll('.auth-form__input').forEach(el => el.classList.remove('is-error'));
     }
-
-    /* ==========================================================================
-       AUTH — Validation Helpers
-    ========================================================================== */
 
     function isValidEmail(email) {
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -337,72 +319,76 @@
       inputIds.forEach(id => document.getElementById(id).classList.remove('is-error'));
     }
 
-    /* ==========================================================================
-       AUTH — Log In Handler
-    ========================================================================== */
+    function setSubmitLoading(formType, isLoading, text) {
+      const btn = formType === 'login'
+        ? document.querySelector('#formLogin .auth-form__submit')
+        : document.querySelector('#formSignup .auth-form__submit');
+      btn.disabled    = isLoading;
+      btn.textContent = text;
+    }
 
-    function handleLogin() {
-      const email    = document.getElementById('loginEmail').value.trim();
+    async function handleLogin() {
+      const username = document.getElementById('loginUsername').value.trim();
       const password = document.getElementById('loginPassword').value;
+      clearErrors('loginError', 'loginUsername', 'loginPassword');
 
-      clearErrors('loginError', 'loginEmail', 'loginPassword');
-
-      if (!isValidEmail(email) || password.length < 1) {
-        showError('loginError', 'loginEmail', 'loginPassword');
+      if (!username || password.length < 1) {
+        document.getElementById('loginError').textContent = 'Please enter your username and password.';
+        showError('loginError', 'loginUsername', 'loginPassword');
         return;
       }
 
-      // Redirect to dashboard on success
-      window.location.href = 'dashboard.html';
+      setSubmitLoading('login', true, 'Signing in...');
+      try {
+        const data = await Api.login(username, password);
+        Auth.save(data.username || username);
+        window.location.href = 'dashboard.html';
+      } catch (err) {
+        document.getElementById('loginError').textContent = err.message;
+        showError('loginError', 'loginUsername', 'loginPassword');
+        setSubmitLoading('login', false, 'Log in');
+      }
     }
 
-    /* ==========================================================================
-       AUTH — Sign Up Handler
-    ========================================================================== */
-
-    function handleSignup() {
-      const name     = document.getElementById('signupName').value.trim();
+    async function handleSignup() {
+      const username = document.getElementById('signupName').value.trim();
       const email    = document.getElementById('signupEmail').value.trim();
       const password = document.getElementById('signupPassword').value;
       const confirm  = document.getElementById('signupConfirm').value;
-
       clearErrors('signupError', 'signupName', 'signupEmail', 'signupPassword', 'signupConfirm');
 
-      if (!name) {
-        document.getElementById('signupError').textContent = 'Please enter your full name.';
-        showError('signupError', 'signupName');
-        return;
+      if (!username) {
+        document.getElementById('signupError').textContent = 'Please enter a username.';
+        showError('signupError', 'signupName'); return;
       }
-
       if (!isValidEmail(email)) {
         document.getElementById('signupError').textContent = 'Please enter a valid email address.';
-        showError('signupError', 'signupEmail');
-        return;
+        showError('signupError', 'signupEmail'); return;
       }
-
       if (password.length < 8) {
         document.getElementById('signupError').textContent = 'Password must be at least 8 characters.';
-        showError('signupError', 'signupPassword');
-        return;
+        showError('signupError', 'signupPassword'); return;
       }
-
       if (password !== confirm) {
         document.getElementById('signupError').textContent = 'Passwords do not match.';
-        showError('signupError', 'signupPassword', 'signupConfirm');
-        return;
+        showError('signupError', 'signupPassword', 'signupConfirm'); return;
       }
 
-      // Redirect to dashboard on success
-      window.location.href = 'dashboard.html';
+      setSubmitLoading('signup', true, 'Creating account...');
+      try {
+        await Api.register(username, email, password);
+        const loginData = await Api.login(username, password);
+        Auth.save(loginData.username || username);
+        window.location.href = 'dashboard.html';
+      } catch (err) {
+        document.getElementById('signupError').textContent = err.message;
+        showError('signupError', 'signupName');
+        setSubmitLoading('signup', false, 'Create account');
+      }
     }
 
-    /* ==========================================================================
-       AUTH — Google Handler (placeholder)
-    ========================================================================== */
-
     function handleGoogle() {
-      // Wire to Google OAuth when backend is ready
-      alert('Google OAuth — connect to Flask backend');
+      window.location.href = 'http://127.0.0.1:5000/auth/google';
     }
   </script>
 

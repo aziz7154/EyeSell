@@ -59,49 +59,37 @@
 
     <div class="price-banner">
       <div class="pb-label">Suggested price range</div>
-      <div class="pb-price">$45 — $72</div>
-      <div class="pb-sub">Based on 14 similar listings · eBay, Poshmark, OfferUp</div>
+      <div class="pb-price" id="priceRange">—</div>
+      <div class="pb-sub" id="priceMeta"></div>
     </div>
 
     <div class="product-card">
-      <div class="product-img">img</div>
+      <div class="product-img" id="productImage">img</div>
       <div class="product-info">
-        <div class="confidence"><div class="conf-dot"></div>94% confidence</div>
-        <div class="product-name">Nike Air Max 90</div>
-        <div class="product-model">Size 10 · Used condition</div>
-        <div class="tags">
-          <span class="tag">Nike</span>
-          <span class="tag">Air Max</span>
-          <span class="tag">sneakers</span>
-          <span class="tag">shoes</span>
-          <span class="tag">size 10</span>
-        </div>
+        <div class="confidence"><div class="conf-dot"></div><span id="confidencePct">—</span></div>
+        <div class="product-name" id="productName"></div>
+        <div class="product-model" id="productModel"></div>
+        <div class="tags" id="productTags"></div>
       </div>
     </div>
 
     <div class="similar-label">Similar listings found</div>
 
-    <div class="listing-grid">
-      <div class="listing-card"><div class="listing-img">img</div><div class="listing-info"><div class="listing-price">$68</div><div class="listing-name">Nike Air Max 90 — eBay</div></div></div>
-      <div class="listing-card"><div class="listing-img">img</div><div class="listing-info"><div class="listing-price">$52</div><div class="listing-name">Air Max 90 — FB Mkt</div></div></div>
-      <div class="listing-card"><div class="listing-img">img</div><div class="listing-info"><div class="listing-price">$71</div><div class="listing-name">Nike Sneakers — Poshmark</div></div></div>
-      <div class="listing-card"><div class="listing-img">img</div><div class="listing-info"><div class="listing-price">$45</div><div class="listing-name">Used Shoes — OfferUp</div></div></div>
-    </div>
+    <div class="listing-grid" id="listingGrid"></div>
 
     <div class="sources-card">
       <div class="sources-title">Price breakdown by source</div>
-      <div class="source-row"><div><div class="source-name">eBay</div><div class="source-count">6 listings</div></div><div class="bar-wrap"><div class="bar" style="width:80%"></div></div><div class="source-price">$68 avg</div></div>
-      <div class="source-row"><div><div class="source-name">Facebook Marketplace</div><div class="source-count">4 listings</div></div><div class="bar-wrap"><div class="bar" style="width:60%"></div></div><div class="source-price">$52 avg</div></div>
-      <div class="source-row"><div><div class="source-name">Poshmark</div><div class="source-count">3 listings</div></div><div class="bar-wrap"><div class="bar" style="width:90%"></div></div><div class="source-price">$71 avg</div></div>
-      <div class="source-row"><div><div class="source-name">OfferUp</div><div class="source-count">1 listing</div></div><div class="bar-wrap"><div class="bar" style="width:45%"></div></div><div class="source-price">$45 avg</div></div>
+      <div id="sourcesBreakdown"></div>
     </div>
 
     <div class="action-row">
-      <button class="btn-primary" onclick="window.location.href='generate.html'">Generate my listing →</button>
-      <button class="btn-outline">Save results</button>
+      <button class="btn-primary" onclick="goToGenerate()">Generate my listing →</button>
+      <button class="btn-outline" id="saveBtn" onclick="saveResults()">Save results</button>
     </div>
 
   </div>
 
+  <script src="api.js"></script>
+  <script src="results.js"></script>
 </body>
 </html>

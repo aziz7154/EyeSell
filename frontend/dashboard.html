@@ -45,7 +45,7 @@
   <nav class="nav">
     <a class="logo" href="index.html">Eye<span>Sell</span></a>
     <div class="nav-links">
-      <span class="nav-link">Aziz</span>
+      <span class="nav-link" id="navUsername">—</span>
       <a class="btn-green" href="upload.html">+ New search</a>
     </div>
   </nav>
@@ -61,15 +61,15 @@
 
     <div class="stats">
       <div class="stat">
-        <div class="stat-val">12</div>
+        <div class="stat-val" id="statListings">—</div>
         <div class="stat-label">Listings saved</div>
       </div>
       <div class="stat">
-        <div class="stat-val green">$847</div>
+        <div class="stat-val green" id="statValue">—</div>
         <div class="stat-label">Est. total value</div>
       </div>
       <div class="stat">
-        <div class="stat-val">38</div>
+        <div class="stat-val" id="statSearches">—</div>
         <div class="stat-label">Searches run</div>
       </div>
     </div>
@@ -83,39 +83,14 @@
         <div class="th">Date</div>
         <div class="th">Status</div>
       </div>
-      <div class="table-row">
-        <div class="td">Nike Air Max 90</div>
-        <div class="td-price">$62</div>
-        <div class="td-date">Apr 10, 2026</div>
-        <div><span class="status-badge status-saved">Saved</span></div>
-      </div>
-      <div class="table-row">
-        <div class="td">Sony WH-1000XM4</div>
-        <div class="td-price">$140</div>
-        <div class="td-date">Apr 8, 2026</div>
-        <div><span class="status-badge status-saved">Saved</span></div>
-      </div>
-      <div class="table-row">
-        <div class="td">iPad Air Gen 4</div>
-        <div class="td-price">$310</div>
-        <div class="td-date">Apr 5, 2026</div>
-        <div><span class="status-badge status-saved">Saved</span></div>
-      </div>
-      <div class="table-row">
-        <div class="td">Levi's 501 Jeans</div>
-        <div class="td-price">$35</div>
-        <div class="td-date">Apr 3, 2026</div>
-        <div><span class="status-badge status-draft">Draft</span></div>
-      </div>
-      <div class="table-row">
-        <div class="td">Canon EOS Rebel T7</div>
-        <div class="td-price">$220</div>
-        <div class="td-date">Apr 1, 2026</div>
-        <div><span class="status-badge status-saved">Saved</span></div>
+      <div id="listingsBody" style="grid-column:1/-1;">
+        <div class="td" style="padding:24px 18px;text-align:center;color:var(--gray-text);">Loading...</div>
       </div>
     </div>
 
   </div>
 
+  <script src="api.js"></script>
+  <script src="dashboard.js"></script>
 </body>
 </html>

@@ -51,7 +51,6 @@
   <div class="page-body">
     <div class="gen-header">
       <div class="gen-title">Generate Listing</div>
-      <span class="ai-badge">AI generated</span>
     </div>
 
     <div class="gen-card">
@@ -69,14 +68,7 @@
 
       <div class="field">
         <div class="field-label">Tags</div>
-        <div class="tags-row">
-          <span class="tag">Nike Air Max </span>
-          <span class="tag">sneakers</span>
-          <span class="tag">shoes</span>
-          <span class="tag">size 10</span>
-          <span class="tag">Nike</span>
-          <span class="tag-add">+ Add tag</span>
-        </div>
+        <div class="tags-row" id="tagsContainer"></div>
       </div>
     </div>
 
@@ -84,13 +76,13 @@
       <div class="card-title">Pricing</div>
 
       <div class="price-grid">
-        <div class="price-box"><div class="price-box-label">Market low</div><div class="price-box-val">$45</div></div>
-        <div class="price-box"><div class="price-box-label">Market high</div><div class="price-box-val">$72</div></div>
+        <div class="price-box"><div class="price-box-label">Market low</div><div class="price-box-val" id="priceLow">—</div></div>
+        <div class="price-box"><div class="price-box-label">Market high</div><div class="price-box-val" id="priceHigh">—</div></div>
       </div>
 
       <div class="your-price">
         <div class="yp-label">Your suggested price</div>
-        <div class="yp-val">$62</div>
+        <div class="yp-val" id="suggestedPrice">—</div>
       </div>
 
       <div class="field">
@@ -103,25 +95,14 @@
 
       <div class="action-row">
         <button class="btn-copy" id="copyBtn">Copy listing</button>
-        <button class="btn-save" onclick="window.location.href='dashboard.html'">Save to dashboard</button>
+        <button class="btn-save" id="saveBtn">Save to dashboard</button>
       </div>
       <div class="copied-toast" id="toast">Listing copied to clipboard!</div>
     </div>
   </div>
 
-  <script>
-    document.getElementById('copyBtn').addEventListener('click', function() {
-      const title = document.getElementById('titleField').value;
-      const desc = document.getElementById('descField').value;
-      const price = document.getElementById('priceField').value;
-      const text = `${title}\n\n${desc}\n\nPrice: ${price}`;
-      navigator.clipboard.writeText(text).then(() => {
-        const toast = document.getElementById('toast');
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 2500);
-      });
-    });
-  </script>
+  <script src="api.js"></script>
+  <script src="generate.js"></script>
 
 </body>
 </html>
