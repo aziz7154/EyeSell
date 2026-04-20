@@ -26,7 +26,7 @@ EyeSell is an AI-powered product listing assistant that turns a photo into a rea
 | Database | PostgreSQL |
 | Cloud | AWS EC2, Nginx, Certbot (SSL) |
 | AI / Vision | Google Cloud Vision API |
-| Search / Pricing | Google Custom Search JSON API |
+| Search / Pricing | eBay Browse API |
 | Storage | Local file storage (S3 optional) |
 | Version Control | GitHub |
 
@@ -36,7 +36,7 @@ EyeSell is an AI-powered product listing assistant that turns a photo into a rea
 
 ### Prerequisites
 
-- Python 3.10+
+- Python 3.11+
 - PostgreSQL
 - Node.js (for React frontend)
 - Git
@@ -71,7 +71,6 @@ DB_HOST=localhost
 DB_PORT=5432
 GOOGLE_API_KEY=your-google-api-key
 GOOGLE_SEARCH_ENGINE_ID=your-search-engine-id
-GOOGLE_VISION_API_KEY=your-vision-api-key
 ```
 
 ### Database Setup
@@ -83,6 +82,14 @@ psql -U postgres -c "CREATE DATABASE eyesell_db;"
 # Run migrations
 flask db upgrade
 ```
+
+### Google Vision API Setup
+- Go to the [Google Cloud Console](https://console.cloud.google.com)
+- Create a project
+- Create a [service account](https://console.cloud.google.com/iam-admin/serviceaccounts)
+- Create a key, selecting `JSON` as the option
+- Rename the `.JSON` file to `vision_account.json`
+- Place `vision_account.json` into `Backend/utils/`
 
 ### Run the Development Server
 
