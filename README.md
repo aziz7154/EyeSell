@@ -71,6 +71,8 @@ DB_HOST=localhost
 DB_PORT=5432
 GOOGLE_API_KEY=your-google-api-key
 GOOGLE_SEARCH_ENGINE_ID=your-search-engine-id
+EBAY_CLIENT_ID=your-ebay-client-id
+EBAY_CLIENT_SECRET=your-ebay-client-secret
 ```
 
 ### Database Setup
