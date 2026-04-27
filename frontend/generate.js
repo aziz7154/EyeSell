@@ -2,9 +2,8 @@ const result = Store.getResult();
 
 if (!result) {
   window.location.href = 'upload.html';
+  throw new Error('No result in session');
 }
-
-
 
 function buildTitle(data) {
   const model = data.product_model ? ` — ${data.product_model}` : '';
@@ -15,7 +14,6 @@ function buildDescription(data) {
   const tagLine = data.tags.length ? `Includes: ${data.tags.slice(0, 3).join(', ')}.` : '';
   return `Selling a ${data.product_name} in great used condition. ${tagLine} Ships within 1-2 business days.`;
 }
-
 
 function renderGenerate(data) {
   const suggested = Math.round((data.price_low + data.price_high) / 2);
@@ -34,8 +32,6 @@ function renderGenerate(data) {
     `<span class="tag-add" onclick="addTag()">+ Add tag</span>`;
 }
 
-
-
 function addTag() {
   const name = prompt('Enter a tag:');
   if (!name || !name.trim()) return;
@@ -53,8 +49,6 @@ function getTags() {
     .map(t => t.textContent.trim());
 }
 
-
-
 document.getElementById('copyBtn').addEventListener('click', () => {
   const title = document.getElementById('titleField').value;
   const desc  = document.getElementById('descField').value;
@@ -71,8 +65,6 @@ document.getElementById('copyBtn').addEventListener('click', () => {
     alert('Could not copy to clipboard. Please copy manually.');
   });
 });
-
-
 
 document.getElementById('saveBtn').addEventListener('click', async () => {
   const btn      = document.getElementById('saveBtn');
@@ -104,7 +96,5 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     btn.disabled    = false;
   }
 });
-
-
 
 renderGenerate(result);

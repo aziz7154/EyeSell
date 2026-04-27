@@ -1,19 +1,25 @@
 from flask import Flask, request, jsonify, session, redirect
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
-from db import init_db, find_user_by_username, create_user, find_user_by_email, create_oauth_user
+from db import init_db, find_user_by_username, create_user, find_user_by_email, create_oauth_user, create_listing, get_listings_by_user, init_listings_table
+from utils.product_identification import identify_product
+from utils.ebay import get_ebay_token, get_ebay
+import uuid
+from pathlib import Path
 import os
 import psycopg2
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
-from pathlib import Path
 
 load_dotenv(dotenv_path=Path(__file__).parent / ".env")
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "fallback-dev-secret")
+UPLOAD_FOLDER = Path(__file__).parent / "uploads"
+UPLOAD_FOLDER.mkdir(exist_ok=True)
+ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
 
-CORS(app, supports_credentials=True, origins=["http://localhost:3000", "http://127.0.0.1:5500"])
+CORS(app, supports_credentials=True, origins=["http://localhost:3000", "http://127.0.0.1:5500", "http://127.0.0.1:5501", "http://localhost:5500", "http://localhost:5501"])
 
 oauth = OAuth(app)
 
@@ -27,7 +33,46 @@ google = oauth.register(
 
 with app.app_context():
     init_db()
+    init_listings_table()
 
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def normalize_ebay_results(ebay_items):
+    prices = []
+    listings = []
+    for item in ebay_items.values():
+        try:
+            price = float(item["price"].split()[0])
+            prices.append(price)
+            listings.append({
+                "title":     item["title"],
+                "price":     price,
+                "source":    "eBay",
+                "image_url": None,
+            })
+        except (ValueError, KeyError):
+            continue
+    if not prices:
+        return {"price_low": 0, "price_high": 0, "sources": [], "listings": []}
+    avg = sum(prices) / len(prices)
+    return {
+        "price_low":  round(min(prices), 2),
+        "price_high": round(max(prices), 2),
+        "sources": [{"name": "eBay", "avg_price": round(avg, 2), "count": len(prices)}],
+        "listings": listings[:4],
+    }
+
+def build_tags(product_name, ebay_items):
+    tags = set()
+    for word in product_name.split():
+        if len(word) > 2:
+            tags.add(word)
+    for item in ebay_items.values():
+        for category in item.get("categories", [])[:2]:
+            tags.add(category)
+    return list(tags)[:8]
 
 #Route for registering a user 
 @app.route("/register", methods=["POST"])
@@ -49,6 +94,7 @@ def register():
     except psycopg2.errors.UniqueViolation:
         return jsonify({"error": "Username or email already exists"}), 409
     except Exception as e:
+        print(f"REGISTRATION ERROR: {e}")
         return jsonify({"error": "Server error during registration"}), 500
 
 
@@ -126,7 +172,89 @@ def google_callback():
     # Redirects back to frontend
     return redirect("http://127.0.0.1:5500/frontend/index.html")
 
+@app.route("/upload", methods=["POST"])
+def upload():
+    if "image" not in request.files:
+        return jsonify({"error": "No image provided"}), 400
+    file = request.files["image"]
+    if not file or not allowed_file(file.filename):
+        return jsonify({"error": "Invalid file type. Use JPG, PNG, or WEBP."}), 400
 
+    ext      = file.filename.rsplit(".", 1)[1].lower()
+    image_id = str(uuid.uuid4())
+    save_path = UPLOAD_FOLDER / f"{image_id}.{ext}"
+    file.save(save_path)
+
+    try:
+        with open(save_path, "rb") as f:
+            product_name = identify_product(f)
+    except Exception as e:
+        return jsonify({"error": f"Vision API error: {str(e)}"}), 500
+
+    if not product_name:
+        return jsonify({"error": "Could not identify product. Try a clearer photo."}), 422
+
+    try:
+        token      = get_ebay_token()
+        ebay_items = get_ebay(token, product_name)
+        pricing    = normalize_ebay_results(ebay_items)
+        tags       = build_tags(product_name, ebay_items)
+    except Exception as e:
+        return jsonify({"error": f"eBay API error: {str(e)}"}), 500
+
+    return jsonify({
+        "image_id":      image_id,
+        "image_url":     None,
+        "product_name":  product_name,
+        "product_model": "",
+        "confidence":    0.90,
+        "tags":          tags,
+        "price_low":     pricing["price_low"],
+        "price_high":    pricing["price_high"],
+        "sources":       pricing["sources"],
+        "listings":      pricing["listings"],
+    }), 200
+
+
+@app.route("/listings", methods=["POST"])
+def save_listing():
+    if "user_id" not in session:
+        return jsonify({"error": "Unauthorized. Please log in."}), 401
+    data = request.get_json()
+    try:
+        listing_id = create_listing(
+            user_id      = session["user_id"],
+            image_id     = data.get("image_id", ""),
+            product_name = data["product_name"],
+            description  = data.get("description", ""),
+            tags         = data.get("tags", ""),
+            price_low    = float(data["price_low"]),
+            price_high   = float(data["price_high"]),
+            price_final  = float(data["price_final"]),
+        )
+        return jsonify({"id": listing_id, "status": "saved"}), 201
+    except Exception as e:
+        return jsonify({"error": f"Could not save listing: {str(e)}"}), 500
+
+
+@app.route("/listings", methods=["GET"])
+def get_listings():
+    if "user_id" not in session:
+        return jsonify({"error": "Unauthorized. Please log in."}), 401
+    try:
+        listings    = get_listings_by_user(session["user_id"])
+        total_value = sum(l["price_final"] for l in listings)
+        return jsonify({
+            "listings": listings,
+            "stats": {
+                "total_listings": len(listings),
+                "total_value":    round(total_value, 2),
+                "total_searches": len(listings),
+            },
+        }), 200
+    except Exception as e:
+        print(f"LISTINGS ERROR: {e}")
+        return jsonify({"error": f"Could not fetch listings: {str(e)}"}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)

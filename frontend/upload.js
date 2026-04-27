@@ -1,8 +1,8 @@
+// v4
 const MAX_FILE_SIZE_MB = 10;
 const MAX_FILE_SIZE_B  = MAX_FILE_SIZE_MB * 1024 * 1024;
 const ALLOWED_TYPES    = ['image/jpeg', 'image/png', 'image/webp'];
 
-const form         = document.getElementById('uploadForm');
 const dropzone     = document.getElementById('dropzone');
 const fileInput    = document.getElementById('fileInput');
 const chooseBtn    = document.getElementById('chooseBtn');
@@ -15,18 +15,22 @@ const uploadError  = document.getElementById('uploadError');
 const submitBtn    = document.getElementById('submitBtn');
 const hintInput    = document.getElementById('hintInput');
 
+let selectedFile = null;
 
-chooseBtn.addEventListener('click', () => fileInput.click());
+chooseBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  fileInput.click();
+});
 
 dropzone.addEventListener('click', (e) => {
-  if (e.target !== chooseBtn) fileInput.click();
+  if (e.target === chooseBtn || chooseBtn.contains(e.target)) return;
+  if (e.target === submitBtn || submitBtn.contains(e.target)) return;
+  fileInput.click();
 });
 
 fileInput.addEventListener('change', () => {
   if (fileInput.files[0]) handleFileSelected(fileInput.files[0]);
 });
-
-
 
 dropzone.addEventListener('dragover', (e) => {
   e.preventDefault();
@@ -42,31 +46,27 @@ dropzone.addEventListener('drop', (e) => {
   dropzone.classList.remove('is-drag-over');
   const file = e.dataTransfer.files[0];
   if (!file) return;
-  const dt = new DataTransfer();
-  dt.items.add(file);
-  fileInput.files = dt.files;
   handleFileSelected(file);
 });
-
 
 function handleFileSelected(file) {
   clearError();
 
   if (!ALLOWED_TYPES.includes(file.type)) {
     showError('Only JPG, PNG, and WEBP images are accepted.');
-    fileInput.value = '';
     return;
   }
 
   if (file.size > MAX_FILE_SIZE_B) {
     showError(`File is too large. Maximum size is ${MAX_FILE_SIZE_MB}MB.`);
-    fileInput.value = '';
     return;
   }
 
+  selectedFile = file;
+
   const reader = new FileReader();
-  reader.onload = (e) => {
-    imagePreview.src = e.target.result;
+  reader.onload = (ev) => {
+    imagePreview.src = ev.target.result;
     imagePreview.classList.add('is-visible');
   };
   reader.readAsDataURL(file);
@@ -79,12 +79,13 @@ function handleFileSelected(file) {
   dropzone.classList.add('is-file-loaded');
 }
 
-
-form.addEventListener('submit', async (e) => {
+submitBtn.addEventListener('click', async (e) => {
   e.preventDefault();
+  e.stopPropagation();
+  e.stopImmediatePropagation();
   clearError();
 
-  if (!fileInput.files || fileInput.files.length === 0) {
+  if (!selectedFile) {
     showError('Please select an image before analyzing.');
     return;
   }
@@ -93,44 +94,34 @@ form.addEventListener('submit', async (e) => {
 
   try {
     const formData = new FormData();
-    formData.append('image', fileInput.files[0]);
+    formData.append('image', selectedFile);
     formData.append('hint', hintInput ? hintInput.value.trim() : '');
 
-    setStatus('Uploading image...');
-    const uploadResult = await Api.uploadImage(formData);
-
-    setStatus('Identifying product...');
-    const analysisResult = await Api.analyzeImage(
-      uploadResult.image_id,
-      hintInput ? hintInput.value.trim() : ''
-    );
-
-    setStatus('Fetching pricing data...');
-    const pricingResult = await Api.searchPricing(analysisResult.product_name);
+    setStatus('Analyzing image and fetching pricing...');
+    const result = await Api.uploadImage(formData);
 
     Store.saveResult({
-      image_id:      uploadResult.image_id,
-      image_url:     uploadResult.image_url || null,
-      product_name:  analysisResult.product_name,
-      product_model: analysisResult.product_model || '',
-      confidence:    analysisResult.confidence,
-      tags:          analysisResult.tags || [],
-      price_low:     pricingResult.price_low,
-      price_high:    pricingResult.price_high,
-      sources:       pricingResult.sources || [],
-      listings:      pricingResult.listings || [],
+      image_id:      result.image_id,
+      image_url:     result.image_url || null,
+      product_name:  result.product_name,
+      product_model: result.product_model || '',
+      confidence:    result.confidence,
+      tags:          result.tags || [],
+      price_low:     result.price_low,
+      price_high:    result.price_high,
+      sources:       result.sources || [],
+      listings:      result.listings || [],
     });
 
     window.location.href = 'results.html';
 
   } catch (err) {
+    alert('ERROR: ' + err.message);
     showError(err.message || 'Something went wrong. Please try again.');
     setLoading(false);
     setStatus('Analyze image →');
   }
 });
-
-
 
 function setLoading(isLoading) {
   submitBtn.disabled = isLoading;

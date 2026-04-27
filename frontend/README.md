@@ -15,6 +15,7 @@ Built for CEG 7370 – Distributed Computing at Wright State University.
 - Real-time price aggregation from eBay, Craigslist, Facebook Marketplace, Amazon, and Etsy
 - Auto-generated listings with title, description, tags, and price range
 - User accounts and saved listings via PostgreSQL
+- Google OAuth login support
 - Cloud-deployed on AWS EC2 with Nginx reverse proxy and SSL via Certbot
 
 ---
@@ -23,13 +24,13 @@ Built for CEG 7370 – Distributed Computing at Wright State University.
 
 | Layer | Technology |
 |---|---|
-| Backend | Flask, Flask-SQLAlchemy, Flask-Migrate |
-| Frontend | HTML, CSS, JavaScript (React) |
-| Database | PostgreSQL |
+| Backend | Flask, Flask-CORS, Authlib |
+| Frontend | HTML, CSS, JavaScript |
+| Database | PostgreSQL (psycopg2) |
 | Cloud | AWS EC2, Nginx, Certbot (SSL) |
 | AI / Vision | Google Cloud Vision API |
 | Search / Pricing | Google Custom Search JSON API |
-| Storage | Local file storage (S3 optional) |
+| Auth | Session-based + Google OAuth |
 | Version Control | GitHub |
 
 ---
@@ -40,95 +41,109 @@ Built for CEG 7370 – Distributed Computing at Wright State University.
 
 - Python 3.10+
 - PostgreSQL
-- Node.js (for React frontend)
 - Git
 
 ### Installation
 
 ```bash
-# Clone the repository
 git clone https://github.com/aziz7154/EyeSell.git
 cd EyeSell
 
-# Create and activate virtual environment
 py -m venv venv
-venv\Scripts\activate       # Windows
-# source venv/bin/activate  # Mac/Linux
-
-# Install Python dependencies
+venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
 ### Environment Variables
 
-Create a `.env` file in the root directory:
+Create a `.env` file inside the `Backend/` folder:
 
 ```
 SECRET_KEY=your-flask-secret-key
-DEBUG=True
-DB_NAME=eyesell_db
-DB_USER=postgres
-DB_PASSWORD=yourpassword
-DB_HOST=localhost
-DB_PORT=5432
-GOOGLE_API_KEY=your-google-api-key
-GOOGLE_SEARCH_ENGINE_ID=your-search-engine-id
+DATABASE_URL=postgresql://postgres:yourpassword@localhost:5432/eyesell_db
+GOOGLE_CLIENT_ID=your-google-oauth-client-id
+GOOGLE_CLIENT_SECRET=your-google-oauth-client-secret
 GOOGLE_VISION_API_KEY=your-vision-api-key
+GOOGLE_API_KEY=your-custom-search-api-key
+GOOGLE_SEARCH_ENGINE_ID=your-search-engine-id
 ```
 
 ### Database Setup
 
 ```bash
-# Create the PostgreSQL database
 psql -U postgres -c "CREATE DATABASE eyesell_db;"
-
-# Run migrations
-flask db upgrade
 ```
+
+The users table is created automatically when the Flask server starts.
 
 ### Run the Development Server
 
 ```bash
-# Backend
-flask --app run run
-
-# Frontend (in a separate terminal)
-cd frontend
-npm install
-npm run dev
+cd Backend
+python app.py
 ```
 
+Backend: `http://127.0.0.1:5000`
+Frontend: open `frontend/index.html` with Live Server in VS Code (`http://127.0.0.1:5500`)
 
+---
+
+## Project Structure
+
+```
+EyeSell/
+├── Backend/
+│   ├── app.py            # Flask routes and auth
+│   └── db.py             # PostgreSQL helpers
+├── frontend/
+│   ├── api.js            # All API calls, Auth, Store
+│   ├── upload.js         # Upload page logic
+│   ├── results.js        # Results page rendering
+│   ├── generate.js       # Listing generator logic
+│   ├── dashboard.js      # Dashboard rendering
+│   ├── index.html        # Landing page
+│   ├── login.html        # Login / sign up
+│   ├── upload.html       # Image upload
+│   ├── results.html      # Pricing results
+│   ├── generate.html     # Listing generator
+│   ├── dashboard.html    # User dashboard
+│   └── shared.css        # Shared styles
+├── requirements.txt
+├── .gitignore
+└── README.md
+```
 
 ---
 
 ## API Endpoints
-```
+
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/` | Health check |
+| POST | `/register` | Create account (username, email, password) |
+| POST | `/login` | Authenticate (username + password) |
+| POST | `/logout` | End session |
+| GET | `/me` | Check session status |
+| GET | `/auth/google` | Redirect to Google OAuth |
+| GET | `/auth/callback` | Google OAuth callback |
 | POST | `/upload` | Upload image, save to disk |
 | POST | `/analyze` | Run Google Cloud Vision API |
-| POST | `/search` | Fetch pricing via Google Search API |
-| POST | `/listings` | Save listing to database |
-| GET | `/listings` | Get all listings for a user |
-| POST | `/auth/register` | Create user account |
-| POST | `/auth/login` | Authenticate user |
+| POST | `/search` | Fetch pricing via Google Custom Search API |
+| POST | `/listings` | Save a listing to database |
+| GET | `/listings` | Get all listings for current user |
+
+---
+
+## Frontend Mock Mode
+
+Test the full UI without a running backend:
+
+```js
+window.EYESELL_USE_MOCK = true;   // api.js — default, uses fake data
+window.EYESELL_USE_MOCK = false;  // switch to real Flask backend
 ```
----
-
-## Sample Usage
-
-**Input:** Upload a photo of a used iPhone
-
-**Output:**
-```json
-{
-  "name": "Apple iPhone 12 64GB Black",
-  "description": "Gently used iPhone 12 in great condition. Minor wear on edges.",
-  "tags": ["iPhone", "Apple", "smartphone", "electronics"],
-  "price_range": "$280 - $340",
-  "sources": ["eBay", "Facebook Marketplace"]
-}
 
 ---
+
+## License
+
+Academic project — Wright State University, Spring 2026.

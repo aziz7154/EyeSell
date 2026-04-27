@@ -9,3 +9,5 @@ db.sqlite3
 .DS_Store
 **/vision_account.json
 **/testing_images
+Backend/.env
+Backend/vision_account.json

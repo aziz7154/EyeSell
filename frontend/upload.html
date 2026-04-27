@@ -171,8 +171,6 @@
       <!-- Upload Form — POST to Flask /upload endpoint -->
       <form
         id="uploadForm"
-        method="POST"
-        action="/upload"
         enctype="multipart/form-data"
         novalidate
       >
@@ -229,7 +227,7 @@
         >
 
         <!-- Submit -->
-        <button class="analyze-btn" type="submit" id="submitBtn">
+        <button class="analyze-btn" type="button" id="submitBtn">
           <span class="analyze-btn__spinner"></span>
           <span class="analyze-btn__label">Analyze image →</span>
         </button>

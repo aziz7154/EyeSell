@@ -2,9 +2,8 @@ const result = Store.getResult();
 
 if (!result) {
   window.location.href = 'upload.html';
+  throw new Error('No result in session');
 }
-
-
 
 function renderResults(data) {
   renderProductCard(data);
@@ -84,7 +83,6 @@ function renderSourcesBreakdown(sources) {
   `).join('');
 }
 
-
 function goToGenerate() {
   window.location.href = 'generate.html';
 }
@@ -97,13 +95,13 @@ async function saveResults() {
 
   try {
     await Api.createListing({
-      image_id:    result.image_id,
+      image_id:     result.image_id,
       product_name: result.product_name,
-      description: '',
-      tags:        result.tags.join(', '),
-      price_low:   result.price_low,
-      price_high:  result.price_high,
-      price_final: Math.round((result.price_low + result.price_high) / 2),
+      description:  '',
+      tags:         result.tags.join(', '),
+      price_low:    result.price_low,
+      price_high:   result.price_high,
+      price_final:  Math.round((result.price_low + result.price_high) / 2),
     });
     btn.textContent = 'Saved!';
   } catch (err) {
@@ -112,7 +110,5 @@ async function saveResults() {
     btn.disabled    = false;
   }
 }
-
-
 
 renderResults(result);

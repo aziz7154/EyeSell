@@ -5,6 +5,15 @@ document.addEventListener('DOMContentLoaded', () => {
   loadDashboard();
 });
 
+async function handleLogout() {
+  try {
+    await Api.logout();
+  } catch (e) {
+    Auth.logout();
+  }
+  window.location.href = 'login.html';
+}
+
 
 async function loadDashboard() {
   try {
