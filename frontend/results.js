@@ -49,7 +49,7 @@ function renderListingGrid(listings) {
   }
 
   grid.innerHTML = listings.slice(0, 4).map(listing => `
-    <div class="listing-card">
+    <div class="listing-card" ${listing.item_url ? `onclick="window.open('${listing.item_url}', '_blank')" style="cursor:pointer;"` : ''}>
       <div class="listing-img">
         ${listing.image_url
           ? `<img src="${listing.image_url}" alt="${listing.title}" style="width:100%;height:100%;object-fit:cover;">`

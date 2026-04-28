@@ -1,6 +1,15 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const username = Auth.getUsername();
-  const userEl   = document.getElementById('navUsername');
+document.addEventListener('DOMContentLoaded', async () => {
+  let username = Auth.getUsername();
+  if (!username) {
+    try {
+      const session = await Api.checkSession();
+      if (session.loggedIn) {
+        Auth.save(session.username);
+        username = session.username;
+      }
+    } catch (e) {}
+  }
+  const userEl = document.getElementById('navUsername');
   if (userEl && username) userEl.textContent = username;
   loadDashboard();
 });
@@ -14,7 +23,6 @@ async function handleLogout() {
   window.location.href = 'login.html';
 }
 
-
 async function loadDashboard() {
   try {
     const data = await Api.getListings();
@@ -26,7 +34,6 @@ async function loadDashboard() {
   }
 }
 
-
 function renderStats(stats) {
   document.getElementById('statListings').textContent =
     stats ? stats.total_listings : '—';
@@ -35,8 +42,6 @@ function renderStats(stats) {
   document.getElementById('statSearches').textContent =
     stats ? stats.total_searches : '—';
 }
-
-
 
 function renderListings(listings) {
   const tbody = document.getElementById('listingsBody');
@@ -62,11 +67,53 @@ function renderListings(listings) {
           ${listing.status === 'saved' ? 'Saved' : 'Draft'}
         </span>
       </div>
+      <div class="td">
+        <button onclick="editListing(${listing.id}, '${listing.product_name.replace(/'/g, "\\'")}', ${listing.price_final ?? listing.price_low})"
+          style="font-size:11px;color:var(--blue-mid);background:none;border:none;cursor:pointer;padding:0;">Edit</button>
+        <span style="color:var(--gray-border);margin:0 4px;">|</span>
+        <button onclick="deleteListing(${listing.id})"
+          style="font-size:11px;color:#A32D2D;background:none;border:none;cursor:pointer;padding:0;">Delete</button>
+      </div>
     </div>
   `).join('');
 }
 
+async function editListing(id, currentName, currentPrice) {
+  const newName = prompt('Edit item name:', currentName);
+  if (!newName) return;
+  const newPrice = prompt('Edit price ($):', currentPrice);
+  if (!newPrice) return;
 
+  try {
+    await fetch(`http://127.0.0.1:5000/listings/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        product_name: newName.trim(),
+        price_final:  parseFloat(newPrice),
+        description:  '',
+        tags:         '',
+      }),
+    });
+    loadDashboard();
+  } catch (err) {
+    alert('Could not update listing.');
+  }
+}
+
+async function deleteListing(id) {
+  if (!confirm('Delete this listing?')) return;
+  try {
+    await fetch(`http://127.0.0.1:5000/listings/${id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    loadDashboard();
+  } catch (err) {
+    alert('Could not delete listing.');
+  }
+}
 
 function renderError(message) {
   const tbody = document.getElementById('listingsBody');

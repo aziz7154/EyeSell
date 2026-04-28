@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, session, redirect
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
-from db import init_db, find_user_by_username, create_user, find_user_by_email, create_oauth_user, create_listing, get_listings_by_user, init_listings_table
+from db import init_db, find_user_by_username, create_user, find_user_by_email, create_oauth_user, create_listing, get_listings_by_user, init_listings_table, get_connection
 from utils.product_identification import identify_product
 from utils.ebay import get_ebay_token, get_ebay
 import uuid
@@ -15,6 +15,9 @@ load_dotenv(dotenv_path=Path(__file__).parent / ".env")
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "fallback-dev-secret")
+app.config['SESSION_PERMANENT'] = True
+app.config['PERMANENT_SESSION_LIFETIME'] = 86400
+
 UPLOAD_FOLDER = Path(__file__).parent / "uploads"
 UPLOAD_FOLDER.mkdir(exist_ok=True)
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
@@ -28,6 +31,7 @@ CORS(app, supports_credentials=True, origins=[
     "http://127.0.0.1:5501",
     "http://127.0.0.1:8000",
 ])
+
 oauth = OAuth(app)
 
 google = oauth.register(
@@ -46,6 +50,7 @@ with app.app_context():
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
 def normalize_ebay_results(ebay_items):
     prices = []
     listings = []
@@ -57,7 +62,8 @@ def normalize_ebay_results(ebay_items):
                 "title":     item["title"],
                 "price":     price,
                 "source":    "eBay",
-                "image_url": None,
+                "image_url": item.get("image_url", None),
+                "item_url":  item.get("item_url", None),
             })
         except (ValueError, KeyError):
             continue
@@ -71,6 +77,7 @@ def normalize_ebay_results(ebay_items):
         "listings": listings[:4],
     }
 
+
 def build_tags(product_name, ebay_items):
     tags = set()
     for word in product_name.split():
@@ -81,10 +88,10 @@ def build_tags(product_name, ebay_items):
             tags.add(category)
     return list(tags)[:8]
 
-#Route for registering a user 
+
 @app.route("/register", methods=["POST"])
 def register():
-    data = request.get_json()
+    data     = request.get_json()
     username = data.get("username", "").strip()
     email    = data.get("email", "").strip()
     password = data.get("password", "")
@@ -105,10 +112,9 @@ def register():
         return jsonify({"error": "Server error during registration"}), 500
 
 
-#Route for user login
 @app.route("/login", methods=["POST"])
 def login():
-    data = request.get_json()
+    data     = request.get_json()
     username = data.get("username", "").strip()
     password = data.get("password", "")
 
@@ -120,75 +126,67 @@ def login():
     if not user or not check_password_hash(user[2], password):
         return jsonify({"error": "Invalid username or password"}), 401
 
-    session["user_id"] = user[0]
+    session["user_id"]  = user[0]
     session["username"] = user[1]
     return jsonify({"message": f"Welcome back, {user[1]}!", "username": user[1]}), 200
 
 
-# Route for user loggin out
 @app.route("/logout", methods=["POST"])
 def logout():
     session.clear()
     return jsonify({"message": "Logged out successfully"}), 200
 
 
-# Route for the dashboard
-@app.route("/dashboard", methods=["GET"])
-def dashboard():
-    if "user_id" not in session:
-        return jsonify({"error": "Unauthorized. Please log in."}), 401
-    return jsonify({"message": f"Hello, {session['username']}!"}), 200
-
-# Route for checking if user is logged in
 @app.route("/me", methods=["GET"])
 def me():
     if "user_id" not in session:
         return jsonify({"loggedIn": False}), 200
     return jsonify({"loggedIn": True, "username": session["username"]}), 200
 
-# Route for redirecting user to google Oauth
+
 @app.route("/auth/google")
 def google_login():
     redirect_uri = "http://127.0.0.1:5000/auth/callback"
     return google.authorize_redirect(redirect_uri)
 
-# Route for redirecting google back to EyeSell
+
 @app.route("/auth/callback")
 def google_callback():
-    token = google.authorize_access_token()
+    token     = google.authorize_access_token()
     user_info = token.get("userinfo")
 
     if not user_info:
         return jsonify({"error": "OAuth failed, no user info returned"}), 400
 
-    email = user_info["email"]
-    name  = user_info.get("name", email.split("@")[0])
+    email    = user_info["email"]
+    name     = user_info.get("name", email.split("@")[0])
+    user     = find_user_by_email(email)
 
-    # Find or create the user
-    user = find_user_by_email(email)
     if not user:
-        user_id = create_oauth_user(name, email)
+        user_id  = create_oauth_user(name, email)
         username = name
     else:
         user_id  = user[0]
         username = user[1]
 
-    session["user_id"] = user_id
+    session["user_id"]  = user_id
     session["username"] = username
 
-    # Redirects back to frontend
-    return redirect("http://127.0.0.1:5500/frontend/index.html")
+    return redirect("http://127.0.0.1:8000/dashboard.html")
+
 
 @app.route("/upload", methods=["POST"])
 def upload():
     if "image" not in request.files:
         return jsonify({"error": "No image provided"}), 400
+
     file = request.files["image"]
+
     if not file or not allowed_file(file.filename):
         return jsonify({"error": "Invalid file type. Use JPG, PNG, or WEBP."}), 400
 
-    ext      = file.filename.rsplit(".", 1)[1].lower()
-    image_id = str(uuid.uuid4())
+    ext       = file.filename.rsplit(".", 1)[1].lower()
+    image_id  = str(uuid.uuid4())
     save_path = UPLOAD_FOLDER / f"{image_id}.{ext}"
     file.save(save_path)
 
@@ -227,7 +225,9 @@ def upload():
 def save_listing():
     if "user_id" not in session:
         return jsonify({"error": "Unauthorized. Please log in."}), 401
+
     data = request.get_json()
+
     try:
         listing_id = create_listing(
             user_id      = session["user_id"],
@@ -248,6 +248,7 @@ def save_listing():
 def get_listings():
     if "user_id" not in session:
         return jsonify({"error": "Unauthorized. Please log in."}), 401
+
     try:
         listings    = get_listings_by_user(session["user_id"])
         total_value = sum(l["price_final"] for l in listings)
@@ -263,7 +264,56 @@ def get_listings():
         print(f"LISTINGS ERROR: {e}")
         return jsonify({"error": f"Could not fetch listings: {str(e)}"}), 500
 
+
+@app.route("/listings/<int:listing_id>", methods=["PUT"])
+def update_listing(listing_id):
+    if "user_id" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.get_json()
+
+    try:
+        conn = get_connection()
+        cur  = conn.cursor()
+        cur.execute("""
+            UPDATE listings
+            SET product_name=%s, description=%s, tags=%s, price_final=%s
+            WHERE id=%s AND user_id=%s
+        """, (
+            data.get("product_name"),
+            data.get("description", ""),
+            data.get("tags", ""),
+            float(data.get("price_final", 0)),
+            listing_id,
+            session["user_id"],
+        ))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/listings/<int:listing_id>", methods=["DELETE"])
+def delete_listing(listing_id):
+    if "user_id" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    try:
+        conn = get_connection()
+        cur  = conn.cursor()
+        cur.execute(
+            "DELETE FROM listings WHERE id=%s AND user_id=%s",
+            (listing_id, session["user_id"])
+        )
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == "__main__":
     app.run(debug=True)
-
-
