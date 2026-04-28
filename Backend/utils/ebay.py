@@ -106,6 +106,14 @@ def get_ebay(token: str, product_name: str) -> dict:
         items[i]['price'] = item['price']['value'] + " " + item['price']['currency']
         items[i]['condition'] = item['condition']
         items[i]['categories'] = []
+        items[i]['images'] = []
+
+        # Add main image
+        items[i]['images'].append(item["image"]["imageUrl"])
+
+        # Loop through additional images
+        for img in item['additionalImages']:
+            items[i]['images'].append(img['imageUrl'])
         
         # Set each category
         for category in item['categories']:
