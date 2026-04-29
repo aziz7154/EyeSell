@@ -16,8 +16,10 @@ def identify_product(uploaded_file: BinaryIO) -> str | None:
     """
 
     # Get credentials from file
+    import os
+    _DIR = os.path.dirname(os.path.abspath(__file__))
     credentials = service_account.Credentials.from_service_account_file(
-        "vision_account.json"
+        os.path.join(_DIR, "vision_account.json")
     )
 
     # Convert credentials to API connection
@@ -97,7 +99,7 @@ def identify_product(uploaded_file: BinaryIO) -> str | None:
     )
 
     # Return the ranked candidates
-    return choose_best_name({
+    best_name = choose_best_name({
         "name": candidates[0] if candidates else None,
         "candidates": candidates,
         "text": extracted_text,
@@ -107,6 +109,16 @@ def identify_product(uploaded_file: BinaryIO) -> str | None:
         "logos": logos,
         "labels": labels,
     })
+
+    enriched_query = best_name
+    if best_name and labels:
+        for label in labels[:3]:
+            # Only append if it's a single clean word and not already in the name
+            if label.lower() not in best_name.lower() and len(label.split()) == 1:
+                enriched_query = f"{best_name} {label}"
+                break
+
+    return enriched_query
 
 def normalize_candidates(extracted_text: list[str], best_guesses: list[str], web_entities: list[str], page_titles: list[str], logos: list[str], labels: list[str]) -> list[str]:
     """Normalize candidates from Vision API return
@@ -193,23 +205,19 @@ def is_garbage(text: str) -> bool:
         If the string is garbage
     """
 
-    # If string is empty, return garbage
     if not text:
         return True
-
-    # If string is too small or large, return garbage
     if len(text) < 3 or len(text) > 120:
         return True
-
-    # If string is mostly numbers or symbols, return garbage
     if sum(c.isalpha() for c in text) < len(text) * 0.5:
         return True
-
-    # If string looks weird (no spaces or weird chunks)
     if len(text.split()) == 1 and len(text) > 15:
         return True
 
-    # If no conditions met, return false
+    # Reject short all-caps tokens — likely size codes, serial numbers
+    if text.isupper() and len(text) <= 6:
+        return True
+
     return False
 
 
@@ -252,21 +260,20 @@ def choose_best_name(result: dict) -> str | None:
         A string (or nothing) of the most likely name
     """
 
-    # Initialze an array
     candidates = []
 
-    # Text from product (most likely candidate)
-    text_candidates = extract_text_candidates(result.get("text", ""))
-    candidates.extend(text_candidates)
+    # Best guesses first — Vision's semantic understanding of the whole image
+    candidates.extend(result.get("best_guesses", []))
 
-    # Page titles (highly likely)
-    candidates.extend(result.get("page_titles", []))
-
-    # Web entities (brand names, so very likely)
+    # Web entities second — brand names, product lines
     candidates.extend(result.get("web_entities", []))
 
-    # Best guesses (fail over, extremely general and inaccurate)
-    candidates.extend(result.get("best_guesses", []))
+    # Page titles third — usually very accurate product names
+    candidates.extend(result.get("page_titles", []))
+
+    # Raw OCR text LAST — too noisy, picks up fret markers, serial numbers, etc.
+    text_candidates = extract_text_candidates(result.get("text", ""))
+    candidates.extend(text_candidates)
 
     # Filter all candidates
     filtered = []

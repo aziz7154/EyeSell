@@ -308,4 +308,28 @@
   </footer>
 
 </body>
+<script src="api.js"></script>
+<script>
+  (async () => {
+    let username = Auth.getUsername();
+    if (!username) {
+      try {
+        const session = await Api.checkSession();
+        if (session.loggedIn) {
+          Auth.save(session.username);
+          username = session.username;
+        }
+      } catch (e) {}
+    }
+
+    if (username) {
+      // show dashboard + logout instead of login/signup previously looked like it was 
+      const actions = document.querySelector('.nav__actions');
+      actions.innerHTML = `
+        <a class="btn-ghost" href="dashboard.html">Dashboard</a>
+        <button class="btn-primary" onclick="Api.logout().then(() => window.location.reload())">Log out</button>
+      `;
+    }
+  })();
+</script>
 </html>

@@ -93,31 +93,44 @@ def get_ebay(token: str, product_name: str) -> dict:
     # Get raw eBay API search
     results = search_ebay_api(token, product_name)
 
+    # Key words to filter by (ignore short words like a and the
+    key_words = [w.lower() for w in product_name.split() if len(w) > 3]
+
     # Set dictionary of items
     items = {}
+    count = 1
 
     # Loop through each item
-    for i, item in enumerate(results['itemSummaries'], start=1):
+    for item in results.get('itemSummaries', []):
+        title_lower = item['title'].lower()
+
+        # Skip listings that don't contain any keyword from the product name
+        if key_words and not any(w in title_lower for w in key_words):
+            continue
+
         # Make item a dictionary
-        items[i] = {}
-        
+        items[count] = {}
+
         # Set attributes
-        items[i]['title'] = item['title']
-        items[i]['price'] = item['price']['value'] + " " + item['price']['currency']
-        items[i]['condition'] = item['condition']
-        items[i]['categories'] = []
-        items[i]['images'] = []
+        items[count]['title'] = item['title']
+        items[count]['price'] = item['price']['value'] + " " + item['price']['currency']
+        items[count]['condition'] = item.get('condition', 'Not specified')
+        items[count]['categories'] = []
+        items[count]['images'] = []
 
         # Add main image
-        items[i]['images'].append(item["image"]["imageUrl"])
+        if 'image' in item:
+            items[count]['images'].append(item["image"]["imageUrl"])
+            items[count]['image_url'] = item["image"]["imageUrl"]
 
         # Loop through additional images
-        for img in item['additionalImages']:
-            items[i]['images'].append(img['imageUrl'])
-        
-        # Set each category
-        for category in item['categories']:
-            items[i]['categories'].append(category['categoryName'])
+        for img in item.get('additionalImages', []):
+            items[count]['images'].append(img['imageUrl'])
 
-    # Return the items
+        # Set each category 
+        for category in item.get('categories', []):
+            items[count]['categories'].append(category['categoryName'])
+
+        count += 1
+
     return items

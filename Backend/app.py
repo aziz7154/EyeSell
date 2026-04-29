@@ -10,6 +10,7 @@ import os
 import psycopg2
 from authlib.integrations.flask_client import OAuth
 from dotenv import load_dotenv
+from flask import Flask, request, jsonify, session, redirect, send_from_directory
 
 load_dotenv(dotenv_path=Path(__file__).parent / ".env")
 
@@ -209,7 +210,7 @@ def upload():
 
     return jsonify({
         "image_id":      image_id,
-        "image_url":     None,
+        "image_url": f"http://127.0.0.1:5000/uploads/{image_id}.{ext}",
         "product_name":  product_name,
         "product_model": "",
         "confidence":    0.90,
@@ -314,6 +315,9 @@ def delete_listing(listing_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/uploads/<filename>")
+def serve_upload(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
 
 if __name__ == "__main__":
     app.run(debug=True)
