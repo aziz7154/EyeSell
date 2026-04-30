@@ -85,7 +85,7 @@ async function editListing(id, currentName, currentPrice) {
   if (!newPrice) return;
 
   try {
-    await fetch(`http://127.0.0.1:5000/listings/${id}`, {
+    await fetch(`https://eyesell.org/listings/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -105,7 +105,7 @@ async function editListing(id, currentName, currentPrice) {
 async function deleteListing(id) {
   if (!confirm('Delete this listing?')) return;
   try {
-    await fetch(`http://127.0.0.1:5000/listings/${id}`, {
+    await fetch(`https://eyesell.org/listings/${id}`, {
       method: 'DELETE',
       credentials: 'include',
     });

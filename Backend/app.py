@@ -18,6 +18,10 @@ app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "fallback-dev-secret")
 app.config['SESSION_PERMANENT'] = True
 app.config['PERMANENT_SESSION_LIFETIME'] = 86400
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_DOMAIN'] = 'eyesell.org'
+
 
 UPLOAD_FOLDER = Path(__file__).parent / "uploads"
 UPLOAD_FOLDER.mkdir(exist_ok=True)
@@ -31,6 +35,9 @@ CORS(app, supports_credentials=True, origins=[
     "http://127.0.0.1:5500",
     "http://127.0.0.1:5501",
     "http://127.0.0.1:8000",
+    "http://100.28.222.144",
+    "http://eyesell.org",
+    "https://eyesell.org",
 ])
 
 oauth = OAuth(app)
@@ -147,7 +154,7 @@ def me():
 
 @app.route("/auth/google")
 def google_login():
-    redirect_uri = "http://127.0.0.1:5000/auth/callback"
+    redirect_uri = "https://eyesell.org/auth/callback"
     return google.authorize_redirect(redirect_uri)
 
 
@@ -173,7 +180,7 @@ def google_callback():
     session["user_id"]  = user_id
     session["username"] = username
 
-    return redirect("http://127.0.0.1:8000/dashboard.html")
+    return redirect("https://eyesell.org/dashboard.html")
 
 
 @app.route("/upload", methods=["POST"])
@@ -210,7 +217,7 @@ def upload():
 
     return jsonify({
         "image_id":      image_id,
-        "image_url": f"http://127.0.0.1:5000/uploads/{image_id}.{ext}",
+        "image_url": f"https://eyesell.org/uploads/{image_id}.{ext}",
         "product_name":  product_name,
         "product_model": "",
         "confidence":    0.90,
